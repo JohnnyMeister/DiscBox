@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DiscBox.Views.ConfirmDeleteDialog"
+        Title="Confirmar eliminação"
+        Width="380" Height="170"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0f1117">
+
+  <StackPanel Margin="28" Spacing="16">
+
+    <TextBlock x:Name="MessageText"
+               Foreground="#e3e5e8" FontSize="13"
+               TextWrapping="Wrap"/>
+
+    <TextBlock Text="Esta ação não pode ser desfeita."
+               Foreground="#8e9297" FontSize="12"/>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Cancelar" Click="OnCancel"
+              Background="#2e3148" Foreground="#e3e5e8"
+              CornerRadius="6" Padding="16,7"/>
+      <Button Content="Apagar" Click="OnConfirm"
+              Background="#ed4245" Foreground="White"
+              CornerRadius="6" Padding="16,7"/>
+    </StackPanel>
+
+  </StackPanel>
+</Window>

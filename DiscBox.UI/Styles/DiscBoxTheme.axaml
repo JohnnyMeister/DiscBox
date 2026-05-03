@@ -1,0 +1,122 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ── Paleta DiscBox (inspirada no Discord dark) ── -->
+  <Styles.Resources>
+    <ResourceDictionary>
+      <!-- Backgrounds -->
+      <Color x:Key="BgBase">#0f1117</Color>
+      <Color x:Key="BgSurface">#1a1d27</Color>
+      <Color x:Key="BgSurface2">#222538</Color>
+      <Color x:Key="BgSidebar">#14161f</Color>
+
+      <!-- Accent / Brand -->
+      <Color x:Key="AccentBlue">#5865F2</Color>
+      <Color x:Key="AccentGreen">#57F287</Color>
+      <Color x:Key="AccentYellow">#FAA61A</Color>
+      <Color x:Key="AccentRed">#ED4245</Color>
+
+      <!-- Text -->
+      <Color x:Key="TextPrimary">#E3E5E8</Color>
+      <Color x:Key="TextMuted">#8E9297</Color>
+      <Color x:Key="TextFaint">#4f545c</Color>
+
+      <!-- Borders -->
+      <Color x:Key="BorderColor">#2e3148</Color>
+
+      <!-- Brushes -->
+      <SolidColorBrush x:Key="BgBaseBrush"      Color="{StaticResource BgBase}" />
+      <SolidColorBrush x:Key="BgSurfaceBrush"   Color="{StaticResource BgSurface}" />
+      <SolidColorBrush x:Key="BgSurface2Brush"  Color="{StaticResource BgSurface2}" />
+      <SolidColorBrush x:Key="BgSidebarBrush"   Color="{StaticResource BgSidebar}" />
+      <SolidColorBrush x:Key="AccentBlueBrush"  Color="{StaticResource AccentBlue}" />
+      <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}" />
+      <SolidColorBrush x:Key="TextMutedBrush"   Color="{StaticResource TextMuted}" />
+      <SolidColorBrush x:Key="BorderBrush"      Color="{StaticResource BorderColor}" />
+    </ResourceDictionary>
+  </Styles.Resources>
+
+  <!-- ── Window background ── -->
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{StaticResource BgBaseBrush}" />
+    <Setter Property="FontFamily" Value="Inter, Segoe UI, sans-serif" />
+  </Style>
+
+  <!-- ── DiscBox primary button ── -->
+  <Style Selector="Button.primary">
+    <Setter Property="Background"  Value="{StaticResource AccentBlueBrush}" />
+    <Setter Property="Foreground"  Value="White" />
+    <Setter Property="FontWeight"  Value="SemiBold" />
+    <Setter Property="Padding"     Value="20,10" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Cursor"      Value="Hand" />
+  </Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#6977f0" />
+  </Style>
+  <Style Selector="Button.primary:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="#4752c4" />
+  </Style>
+
+  <!-- ── Ghost button ── -->
+  <Style Selector="Button.ghost">
+    <Setter Property="Background"  Value="Transparent" />
+    <Setter Property="Foreground"  Value="{StaticResource TextMutedBrush}" />
+    <Setter Property="Padding"     Value="12,8" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Cursor"      Value="Hand" />
+  </Style>
+  <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource BgSurface2Brush}" />
+  </Style>
+
+  <!-- ── File item row ── -->
+  <Style Selector="ListBoxItem.file-item">
+    <Setter Property="Padding"     Value="12,8" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Margin"      Value="4,2" />
+  </Style>
+  <Style Selector="ListBoxItem.file-item:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource BgSurface2Brush}" />
+  </Style>
+  <Style Selector="ListBoxItem.file-item:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="#3d4270" />
+  </Style>
+
+  <!-- ── Sidebar tree item ── -->
+  <Style Selector="TreeViewItem">
+    <Setter Property="Padding"     Value="8,6" />
+    <Setter Property="Foreground"  Value="{StaticResource TextPrimaryBrush}" />
+  </Style>
+
+  <!-- ── TextBox dark ── -->
+  <Style Selector="TextBox">
+    <Setter Property="Background"       Value="{StaticResource BgSurface2Brush}" />
+    <Setter Property="Foreground"       Value="{StaticResource TextPrimaryBrush}" />
+    <Setter Property="BorderBrush"      Value="{StaticResource BorderBrush}" />
+    <Setter Property="CornerRadius"     Value="8" />
+    <Setter Property="Padding"          Value="12,10" />
+    <Setter Property="FontSize"         Value="14" />
+  </Style>
+  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+  </Style>
+
+  <!-- ── Separator ── -->
+  <Style Selector="Separator">
+    <Setter Property="Background" Value="{StaticResource BorderBrush}" />
+    <Setter Property="Height"     Value="1" />
+    <Setter Property="Margin"     Value="0,4" />
+  </Style>
+
+  <!-- ── ProgressBar ── -->
+  <Style Selector="ProgressBar">
+    <Setter Property="Foreground" Value="{StaticResource AccentBlueBrush}" />
+    <Setter Property="Background" Value="{StaticResource BgSurface2Brush}" />
+    <Setter Property="Height"     Value="4" />
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+
+</Styles>

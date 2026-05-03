@@ -1,0 +1,104 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DiscBox.ViewModels"
+        x:Class="DiscBox.Views.SetupWindow"
+        x:DataType="vm:SetupViewModel"
+        Title="DiscBox — Setup"
+        Width="520" Height="560"
+        MinWidth="480" MinHeight="520"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Background="#0f1117">
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <!-- Header -->
+    <Border Grid.Row="0" Background="#1a1d27" Padding="0,32,0,24">
+      <StackPanel HorizontalAlignment="Center" Spacing="8">
+        <TextBlock Text="📦" FontSize="48" HorizontalAlignment="Center"/>
+        <TextBlock Text="DiscBox" FontSize="28" FontWeight="Bold"
+                   Foreground="#5865f2" HorizontalAlignment="Center"/>
+        <TextBlock Text="Your Discord as personal cloud storage"
+                   Foreground="#8e9297" FontSize="13"
+                   HorizontalAlignment="Center"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Form -->
+    <ScrollViewer Grid.Row="1" Padding="40,28">
+      <StackPanel Spacing="20">
+
+        <!-- Step 1: Webhook -->
+        <StackPanel Spacing="6">
+          <TextBlock Text="1. Discord Webhook URL" FontWeight="SemiBold"
+                     Foreground="#e3e5e8" FontSize="13"/>
+          <TextBlock FontSize="12" Foreground="#8e9297" TextWrapping="Wrap">
+            In your Discord server, go to a channel → Edit → Integrations → Webhooks → New Webhook → Copy URL.
+          </TextBlock>
+          <TextBox Watermark="https://discord.com/api/webhooks/..."
+                   Text="{Binding WebhookUrl}"
+                   FontFamily="Cascadia Code,Consolas,monospace"
+                   FontSize="12"
+                   Background="#1a1d27"
+                   Foreground="#a8b4f8"
+                   BorderBrush="#2e3148"
+                   CornerRadius="6"
+                   Padding="12,10"/>
+        </StackPanel>
+
+        <!-- Step 2: Drive name -->
+        <StackPanel Spacing="6">
+          <TextBlock Text="2. Drive Name" FontWeight="SemiBold"
+                     Foreground="#e3e5e8" FontSize="13"/>
+          <TextBox Watermark="My DiscBox"
+                   Text="{Binding DriveName}"
+                   Background="#1a1d27"
+                   Foreground="#e3e5e8"
+                   BorderBrush="#2e3148"
+                   CornerRadius="6"
+                   Padding="12,10"/>
+        </StackPanel>
+
+        <!-- Step 3: Encryption -->
+        <Border Background="#1a1d27" BorderBrush="#2e3148" BorderThickness="1"
+                CornerRadius="8" Padding="16">
+          <StackPanel Spacing="6">
+            <CheckBox IsChecked="{Binding Encrypt}" Content="Encrypt files (AES-256-GCM)"
+                      Foreground="#e3e5e8"/>
+            <TextBlock FontSize="11" Foreground="#8e9297" TextWrapping="Wrap"
+                       Margin="24,0,0,0">
+              Encrypts each chunk before uploading. Files are unreadable without
+              your webhook URL. Cannot be changed after upload.
+            </TextBlock>
+          </StackPanel>
+        </Border>
+
+        <!-- Status message -->
+        <Border IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Background="#1a1d27" BorderBrush="#2e3148" BorderThickness="1"
+                CornerRadius="6" Padding="12,10">
+          <TextBlock Text="{Binding StatusMessage}"
+                     Foreground="#ff6b6b"
+                     FontSize="12" TextWrapping="Wrap"/>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Footer buttons -->
+    <Border Grid.Row="2" Background="#1a1d27" Padding="40,16" BorderBrush="#2e3148" BorderThickness="0,1,0,0">
+      <Button Content="Connect to Discord"
+              Command="{Binding SaveCommand}"
+              IsEnabled="{Binding !IsValidating}"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
+              Height="44"
+              FontSize="14"
+              FontWeight="SemiBold"
+              Background="#5865f2"
+              Foreground="White"
+              CornerRadius="8"/>
+    </Border>
+
+  </Grid>
+</Window>

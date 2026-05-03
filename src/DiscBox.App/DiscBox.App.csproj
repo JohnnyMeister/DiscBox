@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <RootNamespace>DiscBox</RootNamespace>
+    <AssemblyName>DiscBox</AssemblyName>
+    <Version>0.1.0</Version>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\UploadProgressWindow.axaml.cs">
+      <DependentUpon>UploadProgressWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\NewFolderDialog.axaml.cs">
+      <DependentUpon>NewFolderDialog.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ConfirmDeleteDialog.axaml.cs">
+      <DependentUpon>ConfirmDeleteDialog.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>

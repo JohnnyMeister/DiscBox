@@ -27,6 +27,11 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _statusText = "Ready";
     [ObservableProperty] private string _driveName = "My DiscBox";
 
+    // Clipboard interno
+    [ObservableProperty] private FileEntry? _clipboardEntry;
+    [ObservableProperty] private bool _clipboardIsCut = false;
+    public bool HasClipboard => ClipboardEntry is not null;
+
     // BreadcrumbItem instead of tuple — tuples don't work with compiled Avalonia bindings
     public ObservableCollection<BreadcrumbItem> Breadcrumbs { get; } = [];
 
@@ -261,6 +266,107 @@ public partial class MainViewModel : ObservableObject
 
         await RefreshAsync();
     }
+
+    [RelayCommand]
+    private void CutEntry(FileEntry? entry)
+    {
+        if (entry is null) return;
+        ClipboardEntry = entry;
+        ClipboardIsCut = true;
+        StatusText = $"✂ '{entry.Name}' cortado — navega para o destino e cola";
+    }
+
+    [RelayCommand]
+    private void CopyEntry(FileEntry? entry)
+    {
+        if (entry is null) return;
+        ClipboardEntry = entry;
+        ClipboardIsCut = false;
+        StatusText = $"📋 '{entry.Name}' copiado — navega para o destino e cola";
+    }
+
+    [RelayCommand]
+    private async Task PasteAsync()
+    {
+        if (ClipboardEntry is null) return;
+
+        var destPath = CurrentPath.TrimEnd('/') + "/" + ClipboardEntry.Name;
+
+        if (ClipboardIsCut)
+        {
+            bool ok = await Task.Run(() =>
+                _discbox?.Rename(ClipboardEntry.VirtualPath, destPath) ?? false);
+            StatusText = ok
+                ? $"✓ '{ClipboardEntry.Name}' movido!"
+                : $"✗ Erro ao mover: {_discbox?.LastError()}";
+        }
+        else
+        {
+            // Para copiar, usa importFile com os dados que temos
+            bool ok = await Task.Run(() =>
+                _discbox?.ImportFile(destPath, ClipboardEntry.Name,
+                    ClipboardEntry.SizeBytes, "[]") ?? false);
+            StatusText = ok
+                ? $"✓ '{ClipboardEntry.Name}' colado!"
+                : $"✗ Erro ao colar: {_discbox?.LastError()}";
+        }
+
+        if (ClipboardIsCut) ClipboardEntry = null;
+        await RefreshAsync();
+    }
+
+    [RelayCommand]
+    private async Task RenameEntryAsync(FileEntry? entry)
+    {
+        if (entry is null) return;
+
+        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+
+        var dialog = new Views.RenameDialog(entry.Name);
+        var newName = await dialog.ShowDialog<string?>(mainWindow);
+
+        if (string.IsNullOrWhiteSpace(newName) || newName == entry.Name) return;
+
+        var parentPath = entry.VirtualPath.Contains('/')
+            ? entry.VirtualPath[..entry.VirtualPath.LastIndexOf('/')]
+            : "/";
+        var newPath = (parentPath == "" ? "/" : parentPath) + "/" + newName;
+
+        bool ok = await Task.Run(() =>
+            _discbox?.Rename(entry.VirtualPath, newPath) ?? false);
+
+        StatusText = ok
+            ? $"✓ Renomeado para '{newName}'"
+            : $"✗ Erro: {_discbox?.LastError()}";
+
+        await RefreshAsync();
+    }
+
+    [RelayCommand]
+    private async Task CopyPathAsync(FileEntry? entry)
+    {
+        if (entry is null) return;
+        var clipboard = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow?.Clipboard;
+        if (clipboard is not null)
+            await clipboard.SetTextAsync(entry.VirtualPath);
+        StatusText = $"📋 Caminho copiado: {entry.VirtualPath}";
+    }
+
+    [RelayCommand]
+    private async Task ShowPropertiesAsync(FileEntry? entry)
+    {
+        if (entry is null) return;
+        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+        var dialog = new Views.PropertiesDialog(entry);
+        await dialog.ShowDialog(mainWindow!);
+    }
+
     private void UpdateBreadcrumbs(string path)
     {
         Breadcrumbs.Clear();

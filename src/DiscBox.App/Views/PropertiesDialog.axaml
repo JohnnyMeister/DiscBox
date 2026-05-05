@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DiscBox.Views.PropertiesDialog"
+        Title="Propriedades"
+        Width="380" Height="280"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0f1117">
+
+  <StackPanel Margin="28" Spacing="12">
+    <TextBlock x:Name="NameText" FontSize="16" FontWeight="Bold" Foreground="#e3e5e8"/>
+    <Border Height="1" Background="#2e3148"/>
+    <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ShowGridLines="False">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo:" Foreground="#8e9297" FontSize="12"/>
+      <TextBlock x:Name="TypeText" Grid.Row="0" Grid.Column="1" Foreground="#e3e5e8" FontSize="12"/>
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="Tamanho:" Foreground="#8e9297" FontSize="12" Margin="0,8,0,0"/>
+      <TextBlock x:Name="SizeText" Grid.Row="1" Grid.Column="1" Foreground="#e3e5e8" FontSize="12" Margin="0,8,0,0"/>
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="Caminho:" Foreground="#8e9297" FontSize="12" Margin="0,8,0,0"/>
+      <TextBlock x:Name="PathText" Grid.Row="2" Grid.Column="1" Foreground="#e3e5e8" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap"/>
+      <TextBlock Grid.Row="3" Grid.Column="0" Text="Criado em:" Foreground="#8e9297" FontSize="12" Margin="0,8,0,0"/>
+      <TextBlock x:Name="CreatedText" Grid.Row="3" Grid.Column="1" Foreground="#e3e5e8" FontSize="12" Margin="0,8,0,0"/>
+      <TextBlock Grid.Row="4" Grid.Column="0" Text="Encriptado:" Foreground="#8e9297" FontSize="12" Margin="0,8,0,0"/>
+      <TextBlock x:Name="EncryptedText" Grid.Row="4" Grid.Column="1" Foreground="#e3e5e8" FontSize="12" Margin="0,8,0,0"/>
+    </Grid>
+    <Button Content="Fechar" Click="OnClose" HorizontalAlignment="Right"
+            Background="#2e3148" Foreground="#e3e5e8"
+            CornerRadius="6" Padding="16,7" Margin="0,8,0,0"/>
+  </StackPanel>
+</Window>

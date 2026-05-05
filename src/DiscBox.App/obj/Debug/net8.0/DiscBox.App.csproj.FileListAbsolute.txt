@@ -62,3 +62,4 @@ C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\bin\Debug\net8.0\runtimes\w
 C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\obj\Debug\net8.0\DiscBox..18AA7706.Up2Date
 C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\obj\Debug\net8.0\DiscBox.App.genruntimeconfig.cache
 C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\obj\Debug\net8.0\ref\DiscBox.dll
+C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\obj\Debug\net8.0\DiscBox.App.sourcelink.json

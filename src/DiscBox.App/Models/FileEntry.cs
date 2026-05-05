@@ -17,6 +17,7 @@ public class FileEntry
     public long   SizeBytes    { get; set; }
     public string? MimeType    { get; set; }
     public string? ThumbnailUrl { get; set; }
+    public string? ChunkMessageIds { get; set; }
     public DateTime CreatedAt  { get; set; }
     public DateTime ModifiedAt { get; set; }
     public bool   Encrypted    { get; set; }

@@ -140,6 +140,47 @@
                SelectedItem="{Binding SelectedEntry}"
                DoubleTapped="OnEntryDoubleTapped"
                Background="Transparent">
+        <ListBox.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="⬇ Download"
+                      Command="{Binding DownloadEntryCommand}"
+                      CommandParameter="{Binding SelectedEntry}"
+                      IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <Separator/>
+            <MenuItem Header="✂ Cortar"
+                      Command="{Binding CutEntryCommand}"
+                      CommandParameter="{Binding SelectedEntry}"
+                      IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <MenuItem Header="📋 Copiar"
+                      Command="{Binding CopyEntryCommand}"
+                      CommandParameter="{Binding SelectedEntry}"
+                      IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <MenuItem Header="📌 Colar"
+                      Command="{Binding PasteCommand}"
+                      IsVisible="{Binding HasClipboard}"/>
+            <Separator/>
+            <MenuItem Header="✏ Renomear"
+                      Command="{Binding RenameEntryCommand}"
+                      CommandParameter="{Binding SelectedEntry}"
+                      IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <MenuItem Header="🗑 Apagar"
+                      Command="{Binding DeleteEntryCommand}"
+                      CommandParameter="{Binding SelectedEntry}"
+                      IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <Separator/>
+            <MenuItem Header="🔗 Copiar caminho"
+                      Command="{Binding CopyPathCommand}"
+                      CommandParameter="{Binding SelectedEntry}"
+                      IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <MenuItem Header="ℹ Propriedades"
+                      Command="{Binding ShowPropertiesCommand}"
+                      CommandParameter="{Binding SelectedEntry}"
+                      IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <Separator/>
+            <MenuItem Header="📁 Nova Pasta" Command="{Binding NewFolderCommand}"/>
+            <MenuItem Header="⬆ Upload" Command="{Binding UploadFileCommand}"/>
+          </ContextMenu>
+        </ListBox.ContextMenu>
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="m:FileEntry">
             <Grid ColumnDefinitions="36,*,120,160" Height="40">

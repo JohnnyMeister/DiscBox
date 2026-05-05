@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DiscBox.Views.RenameDialog"
+        Title="Renomear"
+        Width="360" Height="160"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0f1117">
+
+  <StackPanel Margin="28" Spacing="16">
+    <TextBlock Text="Novo nome:" Foreground="#e3e5e8" FontSize="13"/>
+    <TextBox x:Name="NameBox"
+             Background="#1a1d27" Foreground="#e3e5e8"
+             BorderBrush="#2e3148" CornerRadius="6"
+             Padding="12,10" FontSize="13"/>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Cancelar" Click="OnCancel"
+              Background="#2e3148" Foreground="#e3e5e8"
+              CornerRadius="6" Padding="16,7"/>
+      <Button Content="Renomear" Click="OnRename"
+              Background="#5865f2" Foreground="White"
+              CornerRadius="6" Padding="16,7"/>
+    </StackPanel>
+  </StackPanel>
+</Window>

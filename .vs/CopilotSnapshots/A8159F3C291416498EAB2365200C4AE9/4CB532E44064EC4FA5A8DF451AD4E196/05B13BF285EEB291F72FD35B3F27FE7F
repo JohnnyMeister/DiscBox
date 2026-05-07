@@ -1,0 +1,386 @@
+﻿/**
+ * discord.c — Discord Webhook HTTP client implementation
+ */
+
+#include "discord.h"
+
+#include <curl/curl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* ── Internal helpers ─────────────────────────────────────────── */
+
+/* Growing buffer used as libcurl write target */
+typedef struct {
+  uint8_t *data;
+  size_t size;
+  size_t capacity;
+} dyn_buf_t;
+
+static int dyn_buf_init(dyn_buf_t *b) {
+  b->data = (uint8_t *)malloc(4096);
+  if (!b->data)
+    return -1;
+  b->size = 0;
+  b->capacity = 4096;
+  b->data[0] = '\0';
+  return 0;
+}
+
+static void dyn_buf_free(dyn_buf_t *b) {
+  free(b->data);
+  b->data = NULL;
+  b->size = b->capacity = 0;
+}
+
+/* libcurl write callback — appends received bytes into a dyn_buf_t */
+static size_t write_callback(char *ptr, size_t size, size_t nmemb,
+                             void *userdata) {
+  size_t bytes = size * nmemb;
+  dyn_buf_t *buf = (dyn_buf_t *)userdata;
+
+  if (buf->size + bytes + 1 > buf->capacity) {
+    size_t new_cap = (buf->capacity + bytes) * 2;
+    uint8_t *tmp = (uint8_t *)realloc(buf->data, new_cap);
+    if (!tmp)
+      return 0; /* signal error to curl */
+    buf->data = tmp;
+    buf->capacity = new_cap;
+  }
+
+  memcpy(buf->data + buf->size, ptr, bytes);
+  buf->size += bytes;
+  buf->data[buf->size] = '\0'; /* null-terminate for JSON parsing convenience */
+  return bytes;
+}
+
+/* libcurl header callback — appends headers into a dyn_buf_t */
+static size_t header_callback(char *ptr, size_t size, size_t nmemb,
+                              void *userdata) {
+  return write_callback(ptr, size, nmemb, userdata);
+}
+
+/* Set last error on a client */
+static void set_error(discord_client_t *client, const char *fmt, ...) {
+  char buf[512];
+  va_list ap;
+  va_start(ap, fmt);
+  vsnprintf(buf, sizeof(buf), fmt, ap);
+  va_end(ap);
+
+  free(client->last_error);
+  client->last_error = strdup(buf);
+  fprintf(stderr, "[discord] %s\n", buf);
+}
+
+/**
+ * Parse the Discord message ID and first attachment URL from a JSON response.
+ * We avoid pulling in a JSON library — Discord's response structure is stable
+ * and simple enough to parse with strstr.
+ *
+ * Example response (trimmed):
+ *   {"id":"1234567890","attachments":[{"url":"https://cdn.discordapp.com/..."}]}
+ */
+static int parse_upload_response(const char *json,
+                                 discord_upload_result_t *result) {
+  /* The message "id" appears AFTER the closing ] of attachments array.
+     Find it by looking for "id": after the last } in attachments */
+
+  /* Step 1: Get attachment URL */
+  const char *att = strstr(json, "\"attachments\":");
+  if (!att)
+    return -1;
+  const char *url_key = strstr(att, "\"url\":");
+  if (!url_key)
+    return -1;
+  url_key += 6;
+  while (*url_key == ' ' || *url_key == '"')
+    url_key++;
+  size_t j = 0;
+  while (url_key[j] && url_key[j] != '"' && j < DISCORD_URL_LEN - 1)
+    j++;
+  strncpy(result->attachment_url, url_key, j);
+  result->attachment_url[j] = '\0';
+
+  /* Step 2: Get message ID — find "id": AFTER the attachments array closes */
+  /* Find the closing ] of attachments */
+  const char *att_end = strstr(att, "]");
+  if (!att_end)
+    return -1;
+
+  /* Now find "id": after that point */
+  const char *id_key = strstr(att_end, "\"id\":");
+  if (!id_key)
+    return -1;
+  id_key += 5;
+  while (*id_key == ' ' || *id_key == '"')
+    id_key++;
+  size_t i = 0;
+  while (id_key[i] && id_key[i] != '"' && id_key[i] != ',' &&
+         i < DISCORD_MSG_ID_LEN - 1)
+    i++;
+  strncpy(result->message_id, id_key, i);
+  result->message_id[i] = '\0';
+
+  if (result->message_id[0] == '\0' || result->attachment_url[0] == '\0')
+    return -1;
+
+  return 0;
+}
+
+/* ── Public API ──────────────────────────────────────────────── */
+
+int discord_client_init(discord_client_t *client, long timeout_sec,
+                        int max_retries) {
+  if (!client)
+    return -1;
+  memset(client, 0, sizeof(*client));
+
+  /* One-time global curl init (safe to call multiple times per curl docs) */
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  CURL *curl = curl_easy_init();
+  if (!curl)
+    return -1;
+
+  client->curl = curl;
+  client->timeout_sec = (timeout_sec > 0) ? timeout_sec : 60;
+  client->max_retries = (max_retries > 0) ? max_retries : 5;
+  client->last_error = NULL;
+
+  ratelimit_init(&client->ratelimit);
+
+  return 0;
+}
+
+void discord_client_free(discord_client_t *client) {
+  if (!client)
+    return;
+  if (client->curl) {
+    curl_easy_cleanup((CURL *)client->curl);
+    client->curl = NULL;
+  }
+  free(client->last_error);
+  client->last_error = NULL;
+}
+
+const char *discord_client_last_error(discord_client_t *client) {
+  if (!client || !client->last_error)
+    return "no error";
+  return client->last_error;
+}
+
+int discord_validate_webhook(discord_client_t *client,
+                             const char *webhook_url) {
+  if (!client || !webhook_url)
+    return -1;
+
+  CURL *curl = (CURL *)client->curl;
+  dyn_buf_t body;
+  if (dyn_buf_init(&body) != 0)
+    return -1;
+
+  curl_easy_reset(curl);
+  curl_easy_setopt(curl, CURLOPT_CAINFO, "ca-bundle.crt");
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+  curl_easy_setopt(curl, CURLOPT_URL, webhook_url);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, client->timeout_sec);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "DiscBox/0.1");
+
+  CURLcode res = curl_easy_perform(curl);
+  long http_code = 0;
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+  dyn_buf_free(&body);
+
+  if (res != CURLE_OK) {
+    set_error(client, "curl error: %s", curl_easy_strerror(res));
+    return -1;
+  }
+  if (http_code != 200) {
+    set_error(client, "webhook validation failed, HTTP %ld", http_code);
+    return -1;
+  }
+  return 0;
+}
+
+int discord_upload_chunk(discord_client_t *client, const char *webhook_url,
+                         const char *filename, const uint8_t *data,
+                         size_t data_size, discord_upload_result_t *result) {
+  if (!client || !webhook_url || !filename || !data || !result)
+    return -1;
+
+  fprintf(stderr, "[discord] upload_chunk: filename=%s size=%zu\n", filename,
+          data_size);
+
+  CURL *curl = (CURL *)client->curl;
+  int attempt = 0;
+
+  while (attempt <= client->max_retries) {
+
+    /* Wait if rate limited */
+    ratelimit_wait_if_needed(&client->ratelimit);
+
+    dyn_buf_t body, headers;
+    if (dyn_buf_init(&body) != 0 || dyn_buf_init(&headers) != 0)
+      return -1;
+
+    /* Build multipart form */
+    curl_mime *form = curl_mime_init(curl);
+    curl_mimepart *part = curl_mime_addpart(form);
+    curl_mime_name(part, "file");
+    curl_mime_data(part, (const char *)data, data_size);
+    curl_mime_filename(part, filename);
+    curl_mime_type(part, "application/octet-stream");
+
+    curl_easy_reset(curl);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl, CURLOPT_URL, webhook_url);
+    curl_easy_setopt(curl, CURLOPT_MIMEPOST, form);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headers);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 0L); /* sem limite de tempo */
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "DiscBox/0.1");
+
+    CURLcode res = curl_easy_perform(curl);
+    long http_code = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+    fprintf(stderr, "[discord] curl result=%d http=%ld\n", (int)res, http_code);
+
+    /* Always update rate limit state from response headers */
+    ratelimit_update(&client->ratelimit, (const char *)headers.data);
+
+    curl_mime_free(form);
+
+    if (res != CURLE_OK) {
+      set_error(client, "curl error on upload: %s", curl_easy_strerror(res));
+      dyn_buf_free(&body);
+      dyn_buf_free(&headers);
+      attempt++;
+      continue; /* retry on network error */
+    }
+
+    if (http_code == 429) {
+      /* Rate limited — parse Retry-After from headers and wait */
+      double retry_after = client->ratelimit.retry_after;
+      ratelimit_handle_429(&client->ratelimit, retry_after);
+      dyn_buf_free(&body);
+      dyn_buf_free(&headers);
+      attempt++;
+      continue;
+    }
+    fprintf(stderr, "[discord] HTTP %ld response: %.500s\n", http_code,
+            (char *)body.data);
+    if (http_code == 200) {
+      /* Parse the response JSON for message_id and attachment_url */
+      int ok = parse_upload_response((const char *)body.data, result);
+      dyn_buf_free(&body);
+      dyn_buf_free(&headers);
+
+      if (ok != 0) {
+        set_error(client, "failed to parse Discord upload response");
+        return -1;
+      }
+      return 0; /* success */
+    }
+
+    /* Unexpected HTTP error */
+    set_error(client, "Discord upload failed: HTTP %ld — %s", http_code,
+              (char *)body.data);
+    dyn_buf_free(&body);
+    dyn_buf_free(&headers);
+
+    /* Don't retry 4xx errors (except 429 handled above) */
+    if (http_code >= 400 && http_code < 500)
+      return -1;
+
+    attempt++;
+  }
+
+  set_error(client, "upload failed after %d attempts", client->max_retries);
+  return -1;
+}
+
+int discord_download_url(discord_client_t *client, const char *cdn_url,
+                         uint8_t **out_data, size_t *out_size) {
+  if (!client || !cdn_url || !out_data || !out_size)
+    return -1;
+
+  CURL *curl = (CURL *)client->curl;
+  dyn_buf_t body;
+  if (dyn_buf_init(&body) != 0)
+    return -1;
+
+  curl_easy_reset(curl);
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+  curl_easy_setopt(curl, CURLOPT_URL, cdn_url);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 0L);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "DiscBox/0.1");
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); /* follow CDN redirects */
+
+  CURLcode res = curl_easy_perform(curl);
+  long http_code = 0;
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+  if (res != CURLE_OK || http_code != 200) {
+    set_error(client, "download failed: %s (HTTP %ld)", curl_easy_strerror(res),
+              http_code);
+    dyn_buf_free(&body);
+    return -1;
+  }
+
+  *out_data = body.data; /* transfer ownership — caller must free */
+  *out_size = body.size;
+  return 0;
+}
+
+int discord_delete_message(discord_client_t *client, const char *webhook_url,
+                           const char *message_id) {
+  if (!client || !webhook_url || !message_id)
+    return -1;
+
+  /* Build DELETE URL: {webhook_url}/messages/{message_id} */
+  char url[768];
+  snprintf(url, sizeof(url), "%s/messages/%s", webhook_url, message_id);
+
+  CURL *curl = (CURL *)client->curl;
+  curl_easy_reset(curl);
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+  curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);        /* limpa qualquer POST/MIME anterior */
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, NULL);   /* sem body */
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, client->timeout_sec);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "DiscBox/0.1");
+
+  /* Discard response body */
+  dyn_buf_t body;
+  dyn_buf_init(&body);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
+
+  CURLcode res = curl_easy_perform(curl);
+  long http_code = 0;
+  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+  dyn_buf_free(&body);
+
+  if (res != CURLE_OK) {
+    set_error(client, "delete failed: %s", curl_easy_strerror(res));
+    return -1;
+  }
+
+  /* 204 No Content = success; 404 means already deleted — both are fine */
+  if (http_code != 204 && http_code != 404) {
+    set_error(client, "delete failed: HTTP %ld", http_code);
+    return -1;
+  }
+
+  return 0;
+}

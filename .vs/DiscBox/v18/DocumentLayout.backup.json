@@ -3,6 +3,17 @@
   "WorkspaceRootPath": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|c:\\users\\jpmmm\\desktop\\cenas\\discbox\\src\\discbox.app\\views\\uploadprogresswindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
+      "RelativeMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|solutionrelative:src\\discbox.app\\views\\uploadprogresswindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\chunk.c||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|c:\\users\\jpmmm\\desktop\\cenas\\discbox\\src\\discbox.app\\views\\setupwindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
+      "RelativeMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|solutionrelative:src\\discbox.app\\views\\setupwindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|c:\\users\\jpmmm\\desktop\\cenas\\discbox\\src\\discbox.app\\views\\mainwindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
       "RelativeMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|solutionrelative:src\\discbox.app\\views\\mainwindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
     },
@@ -53,10 +64,6 @@
       "RelativeMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|solutionrelative:src\\discbox.app\\views\\mainwindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|c:\\users\\jpmmm\\desktop\\cenas\\discbox\\src\\discbox.app\\views\\uploadprogresswindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}",
-      "RelativeMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|solutionrelative:src\\discbox.app\\views\\uploadprogresswindow.axaml||{6D5344A2-2FCD-49DE-A09D-6A14FD1B1224}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|c:\\users\\jpmmm\\desktop\\cenas\\discbox\\src\\discbox.app\\views\\uploadprogresswindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|solutionrelative:src\\discbox.app\\views\\uploadprogresswindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -79,6 +86,9 @@
     {
       "AbsoluteMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|c:\\users\\jpmmm\\desktop\\cenas\\discbox\\src\\discbox.app\\views\\propertiesdialog.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E881811E-0D5D-476F-8C4E-B75C6B7FAFE7}|src\\DiscBox.App\\DiscBox.App.csproj|solutionrelative:src\\discbox.app\\views\\propertiesdialog.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\chunk.h||{3B902123-F8A7-4915-9F01-361F908088D0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -88,37 +98,77 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 8,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "discord.c",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\discord.c",
               "RelativeDocumentMoniker": "..\\..\\..\\Downloads\\libdiscbox\\src\\discord.c",
               "ToolTip": "C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\discord.c",
               "RelativeToolTip": "..\\..\\..\\Downloads\\libdiscbox\\src\\discord.c",
-              "ViewState": "AgIAAD8BAAAAAAAAAAAgwFkBAAAtAAAAAAAAAA==",
+              "ViewState": "AgIAAEMBAAAAAAAAAABBwFkBAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-05-02T17:10:42.158Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "discbox.c",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\discbox.c",
               "RelativeDocumentMoniker": "..\\..\\..\\Downloads\\libdiscbox\\src\\discbox.c",
               "ToolTip": "C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\discbox.c",
               "RelativeToolTip": "..\\..\\..\\Downloads\\libdiscbox\\src\\discbox.c",
-              "ViewState": "AgIAAJoBAAAAAAAAAAAAACoAAAADAAAAAAAAAA==",
+              "ViewState": "AgIAALUAAAAAAAAAAABBwCoAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2026-05-03T17:13:47.056Z",
               "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 1,
+              "Title": "chunk.c",
+              "DocumentMoniker": "C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\chunk.c",
+              "RelativeDocumentMoniker": "..\\..\\..\\Downloads\\libdiscbox\\src\\chunk.c",
+              "ToolTip": "C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\chunk.c",
+              "RelativeToolTip": "..\\..\\..\\Downloads\\libdiscbox\\src\\chunk.c",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2026-05-07T03:03:34.095Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "chunk.h",
+              "DocumentMoniker": "C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\chunk.h",
+              "RelativeDocumentMoniker": "..\\..\\..\\Downloads\\libdiscbox\\src\\chunk.h",
+              "ToolTip": "C:\\Users\\jpmmm\\Downloads\\libdiscbox\\src\\chunk.h",
+              "RelativeToolTip": "..\\..\\..\\Downloads\\libdiscbox\\src\\chunk.h",
+              "ViewState": "AgIAAA8AAAAAAAAAAABBwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-05-07T03:06:09.64Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SetupWindow.axaml",
+              "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\SetupWindow.axaml",
+              "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\SetupWindow.axaml",
+              "ToolTip": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\SetupWindow.axaml",
+              "RelativeToolTip": "src\\DiscBox.App\\Views\\SetupWindow.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-06T16:41:38.43Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
               "Title": "PropertiesDialog.axaml.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\PropertiesDialog.axaml.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\PropertiesDialog.axaml.cs",
@@ -130,7 +180,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 20,
               "Title": "RenameDialog.axaml.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\RenameDialog.axaml.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\RenameDialog.axaml.cs",
@@ -142,7 +192,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "RenameDialog.axaml",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\RenameDialog.axaml",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\RenameDialog.axaml",
@@ -153,7 +203,30 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 0,
+              "Title": "UploadProgressWindow.axaml",
+              "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\UploadProgressWindow.axaml",
+              "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\UploadProgressWindow.axaml",
+              "ToolTip": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\UploadProgressWindow.axaml",
+              "RelativeToolTip": "src\\DiscBox.App\\Views\\UploadProgressWindow.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-02T17:26:42.129Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MainWindow.axaml",
+              "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\MainWindow.axaml",
+              "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\MainWindow.axaml",
+              "ToolTip": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\MainWindow.axaml",
+              "RelativeToolTip": "src\\DiscBox.App\\Views\\MainWindow.axaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-05-03T17:16:01.92Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
               "Title": "FileEntry.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Models\\FileEntry.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Models\\FileEntry.cs",
@@ -165,19 +238,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "MainWindow.axaml",
-              "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\MainWindow.axaml",
-              "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\MainWindow.axaml",
-              "ToolTip": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\MainWindow.axaml",
-              "RelativeToolTip": "src\\DiscBox.App\\Views\\MainWindow.axaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-05-03T17:16:01.92Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "DiscboxService.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Services\\DiscboxService.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Services\\DiscboxService.cs",
@@ -189,7 +250,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 10,
               "Title": "DisboxMigrationService.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Services\\DisboxMigrationService.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Services\\DisboxMigrationService.cs",
@@ -201,7 +262,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 11,
               "Title": "ConfirmDeleteDialog.axaml.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\ConfirmDeleteDialog.axaml.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\ConfirmDeleteDialog.axaml.cs",
@@ -213,7 +274,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 14,
               "Title": "NewFolderDialog.axaml",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\NewFolderDialog.axaml",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\NewFolderDialog.axaml",
@@ -224,7 +285,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 13,
               "Title": "NewFolderDialog.axaml.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\NewFolderDialog.axaml.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\NewFolderDialog.axaml.cs",
@@ -236,7 +297,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 15,
               "Title": "MainWindow.axaml.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\MainWindow.axaml.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\MainWindow.axaml.cs",
@@ -248,7 +309,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 8,
               "Title": "DiscboxNative.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Services\\DiscboxNative.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Services\\DiscboxNative.cs",
@@ -260,7 +321,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 18,
               "Title": "StringConverters.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Converters\\StringConverters.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Converters\\StringConverters.cs",
@@ -272,7 +333,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 7,
               "Title": "MainViewModel.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\ViewModels\\MainViewModel.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\ViewModels\\MainViewModel.cs",
@@ -284,7 +345,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 12,
               "Title": "ConfirmDeleteDialog.axaml",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\ConfirmDeleteDialog.axaml",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\ConfirmDeleteDialog.axaml",
@@ -295,30 +356,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 17,
               "Title": "UploadProgressViewModel.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\ViewModels\\UploadProgressViewModel.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\ViewModels\\UploadProgressViewModel.cs",
               "ToolTip": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\ViewModels\\UploadProgressViewModel.cs",
               "RelativeToolTip": "src\\DiscBox.App\\ViewModels\\UploadProgressViewModel.cs",
-              "ViewState": "AgIAAAoAAAAAAAAAAAAswC8AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAABRwFIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-02T17:29:17.065Z"
+              "WhenOpened": "2026-05-02T17:29:17.065Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "UploadProgressWindow.axaml",
-              "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\UploadProgressWindow.axaml",
-              "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\UploadProgressWindow.axaml",
-              "ToolTip": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\UploadProgressWindow.axaml",
-              "RelativeToolTip": "src\\DiscBox.App\\Views\\UploadProgressWindow.axaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-05-02T17:26:42.129Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 16,
               "Title": "UploadProgressWindow.axaml.cs",
               "DocumentMoniker": "C:\\Users\\jpmmm\\Desktop\\cenas\\DiscBox\\src\\DiscBox.App\\Views\\UploadProgressWindow.axaml.cs",
               "RelativeDocumentMoniker": "src\\DiscBox.App\\Views\\UploadProgressWindow.axaml.cs",

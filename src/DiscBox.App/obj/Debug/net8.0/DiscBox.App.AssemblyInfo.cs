@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DiscBox")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.1.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.0+eec864801638255df76141880f559aee45b7d61b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.0+1053b36733309484469e6212b30d61c415e31e14")]
 [assembly: System.Reflection.AssemblyProductAttribute("DiscBox")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DiscBox")]
 [assembly: System.Reflection.AssemblyVersionAttribute("0.1.0.0")]

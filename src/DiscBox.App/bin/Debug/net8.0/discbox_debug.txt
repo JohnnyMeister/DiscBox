@@ -1,0 +1,1 @@
+fetch_message: res=0 (No error) http=429 body='{"message": "You are being rate limited.", "retry_after": 0.3, "global": false}' url=https://discord.com/api/webhooks/1473768378861752486/d0h2laroj0u72G_RltjSWl3UOurRDS7p8bxQu1aJ3RGL739UMokxX52ePysES1T6FMIK/messages/1480645372245442754

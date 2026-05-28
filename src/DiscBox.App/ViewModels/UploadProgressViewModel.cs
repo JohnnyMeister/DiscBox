@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 
@@ -9,6 +9,7 @@ public partial class UploadProgressViewModel : ObservableObject
     [ObservableProperty] private string _fileName = string.Empty;
     [ObservableProperty] private int _percent = 0;
     [ObservableProperty] private string _statusText = "A preparar...";
+    [ObservableProperty] private string _detailText = string.Empty;
     [ObservableProperty] private string _speedText = string.Empty;
     [ObservableProperty] private string _etaText = string.Empty;
     [ObservableProperty] private bool _isDone = false;
@@ -16,7 +17,6 @@ public partial class UploadProgressViewModel : ObservableObject
     public bool Cancelled { get; private set; } = false;
 
     private DateTime _startTime = DateTime.Now;
-    private long _lastBytes = 0;
 
     [RelayCommand]
     private void Cancel()
@@ -28,6 +28,18 @@ public partial class UploadProgressViewModel : ObservableObject
     public void Update(long done, long total, int chunkIndex, int chunkCount)
     {
         if (_startTime == default) _startTime = DateTime.Now;
+
+        if (total < 0)
+        {
+            var retrieved = Math.Max(0, done);
+            var totalUrls = Math.Max(0, chunkCount);
+            Percent = totalUrls > 0 ? (int)(retrieved * 100 / totalUrls) : 0;
+            StatusText = $"A recuperar URLs {retrieved}/{totalUrls}";
+            DetailText = "A pedir links temporarios ao Discord antes de descarregar os chunks.";
+            SpeedText = totalUrls > 0 ? $"{retrieved}/{totalUrls} URLs" : string.Empty;
+            EtaText = string.Empty;
+            return;
+        }
 
         Percent = total > 0 ? (int)(done * 100 / total) : 0;
 
@@ -43,34 +55,45 @@ public partial class UploadProgressViewModel : ObservableObject
             double remainingSec = (total - done) / bytesPerSec;
             EtaText = $"~{FormatTime(remainingSec)} restantes";
         }
+        else
+        {
+            EtaText = string.Empty;
+        }
 
-        StatusText = $"Chunk {chunkIndex + 1}/{chunkCount} — " +
+        var currentChunk = chunkCount > 0 ? Math.Min(chunkIndex + 1, chunkCount) : 0;
+        StatusText = $"Chunk {currentChunk}/{chunkCount} - " +
                      $"{FormatBytes(done)} / {FormatBytes(total)}";
+        DetailText = chunkCount > 0
+            ? $"{chunkCount} chunk(s) no total; {Math.Min(done, total):N0} bytes processados"
+            : string.Empty;
     }
 
     public void Complete(string fileName)
     {
-        Percent    = 100;
+        Percent = 100;
         var elapsed = (DateTime.Now - _startTime).TotalSeconds;
-        StatusText = $"✓ Concluído em {FormatTime(elapsed)}";
-        SpeedText  = string.Empty;
-        EtaText    = string.Empty;
-        IsDone     = true;
+        StatusText = $"Concluido em {FormatTime(elapsed)}";
+        DetailText = string.Empty;
+        SpeedText = string.Empty;
+        EtaText = string.Empty;
+        IsDone = true;
     }
 
     public void Error(string message)
     {
-        StatusText = $"✗ Erro: {message}";
-        SpeedText  = string.Empty;
-        EtaText    = string.Empty;
-        IsDone     = true;
+        StatusText = $"Erro: {message}";
+        DetailText = string.Empty;
+        SpeedText = string.Empty;
+        EtaText = string.Empty;
+        IsDone = true;
     }
 
     private static string FormatBytes(long bytes) => bytes switch
     {
         < 1024 => $"{bytes} B",
         < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
-        _ => $"{bytes / 1024.0 / 1024:F1} MB"
+        < 1024L * 1024 * 1024 => $"{bytes / 1024.0 / 1024:F1} MB",
+        _ => $"{bytes / 1024.0 / 1024 / 1024:F2} GB"
     };
 
     private static string FormatTime(double seconds) => seconds switch

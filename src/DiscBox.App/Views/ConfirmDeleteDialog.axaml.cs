@@ -6,12 +6,20 @@ namespace DiscBox.Views;
 
 public partial class ConfirmDeleteDialog : Window
 {
+    public ConfirmDeleteDialog()
+    {
+        InitializeComponent();
+    }
+
     public ConfirmDeleteDialog(string name, bool isFolder)
     {
         InitializeComponent();
         var tipo = isFolder ? "a pasta" : "o ficheiro";
-        this.FindControl<TextBlock>("MessageText")!.Text =
-            $"Tens a certeza que queres apagar {tipo} \"{name}\"?";
+        var msgText = this.FindControl<TextBlock>("MessageText");
+        if (msgText != null)
+        {
+            msgText.Text = $"Tens a certeza que queres apagar {tipo} \"{name}\"?";
+        }
     }
 
     private void InitializeComponent()

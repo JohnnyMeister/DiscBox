@@ -7,6 +7,11 @@ namespace DiscBox.Views;
 
 public partial class PropertiesDialog : Window
 {
+    public PropertiesDialog()
+    {
+        InitializeComponent();
+    }
+
     public PropertiesDialog(FileEntry entry)
     {
         InitializeComponent();

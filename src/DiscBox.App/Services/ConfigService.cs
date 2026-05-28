@@ -21,6 +21,15 @@ public class ConfigService
 
     public static readonly string DefaultDbPath = Path.Combine(AppDataDir, "drive.sqlite");
 
+    public class QuickAccessFolder
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("path")]
+        public string Path { get; set; } = string.Empty;
+    }
+
     // ── Config model ───────────────────────────────────────────
     public class Config
     {
@@ -35,6 +44,9 @@ public class ConfigService
 
         [JsonPropertyName("drive_name")]
         public string DriveName { get; set; } = "My DiscBox";
+
+        [JsonPropertyName("quick_access_folders")]
+        public System.Collections.Generic.List<QuickAccessFolder> QuickAccessFolders { get; set; } = new();
     }
 
     // ── State ──────────────────────────────────────────────────

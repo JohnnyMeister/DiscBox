@@ -6,6 +6,11 @@ namespace DiscBox.Views;
 
 public partial class RenameDialog : Window
 {
+    public RenameDialog()
+    {
+        InitializeComponent();
+    }
+
     public RenameDialog(string currentName)
     {
         InitializeComponent();

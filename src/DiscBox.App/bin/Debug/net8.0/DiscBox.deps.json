@@ -10,9 +10,11 @@
         "dependencies": {
           "Avalonia": "11.2.3",
           "Avalonia.Desktop": "11.2.3",
+          "Avalonia.Diagnostics": "11.2.3",
           "Avalonia.Fonts.Inter": "11.2.3",
           "Avalonia.Themes.Fluent": "11.2.3",
-          "CommunityToolkit.Mvvm": "8.3.2"
+          "CommunityToolkit.Mvvm": "8.3.2",
+          "Material.Icons.Avalonia": "2.1.0"
         },
         "runtime": {
           "DiscBox.dll": {}
@@ -89,6 +91,30 @@
           }
         }
       },
+      "Avalonia.Controls.ColorPicker/11.2.3": {
+        "dependencies": {
+          "Avalonia": "11.2.3",
+          "Avalonia.Remote.Protocol": "11.2.3"
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
+            "assemblyVersion": "11.2.3.0",
+            "fileVersion": "11.2.3.0"
+          }
+        }
+      },
+      "Avalonia.Controls.DataGrid/11.2.3": {
+        "dependencies": {
+          "Avalonia": "11.2.3",
+          "Avalonia.Remote.Protocol": "11.2.3"
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
+            "assemblyVersion": "11.2.3.0",
+            "fileVersion": "11.2.3.0"
+          }
+        }
+      },
       "Avalonia.Desktop/11.2.3": {
         "dependencies": {
           "Avalonia": "11.2.3",
@@ -99,6 +125,20 @@
         },
         "runtime": {
           "lib/net8.0/Avalonia.Desktop.dll": {
+            "assemblyVersion": "11.2.3.0",
+            "fileVersion": "11.2.3.0"
+          }
+        }
+      },
+      "Avalonia.Diagnostics/11.2.3": {
+        "dependencies": {
+          "Avalonia": "11.2.3",
+          "Avalonia.Controls.ColorPicker": "11.2.3",
+          "Avalonia.Controls.DataGrid": "11.2.3",
+          "Avalonia.Themes.Simple": "11.2.3"
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Diagnostics.dll": {
             "assemblyVersion": "11.2.3.0",
             "fileVersion": "11.2.3.0"
           }
@@ -174,6 +214,17 @@
         },
         "runtime": {
           "lib/net8.0/Avalonia.Themes.Fluent.dll": {
+            "assemblyVersion": "11.2.3.0",
+            "fileVersion": "11.2.3.0"
+          }
+        }
+      },
+      "Avalonia.Themes.Simple/11.2.3": {
+        "dependencies": {
+          "Avalonia": "11.2.3"
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Themes.Simple.dll": {
             "assemblyVersion": "11.2.3.0",
             "fileVersion": "11.2.3.0"
           }
@@ -276,6 +327,26 @@
             "rid": "win-x86",
             "assetType": "native",
             "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Material.Icons/2.1.0": {
+        "runtime": {
+          "lib/netstandard2.0/Material.Icons.dll": {
+            "assemblyVersion": "2.1.0.0",
+            "fileVersion": "2.1.0.0"
+          }
+        }
+      },
+      "Material.Icons.Avalonia/2.1.0": {
+        "dependencies": {
+          "Avalonia": "11.2.3",
+          "Material.Icons": "2.1.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Material.Icons.Avalonia.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
           }
         }
       },
@@ -395,12 +466,33 @@
       "path": "avalonia.angle.windows.natives/2.1.22045.20230930",
       "hashPath": "avalonia.angle.windows.natives.2.1.22045.20230930.nupkg.sha512"
     },
+    "Avalonia.Controls.ColorPicker/11.2.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JpK84GN+CkS5H0L/mDyYa4aMAJw93dukedKK1xC4g/J5NmwQ23qFPQNqZlTs+6f9nULwJPL+jiffJpSyGMt0gg==",
+      "path": "avalonia.controls.colorpicker/11.2.3",
+      "hashPath": "avalonia.controls.colorpicker.11.2.3.nupkg.sha512"
+    },
+    "Avalonia.Controls.DataGrid/11.2.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Ul6oWEoqs4eTQZIb4Hzf0+ajhgrCX9ypOj8TahKbkKoIznJkUoka3iV90Vpj/AuoT5AZsN6f+1+62SVPpeMApA==",
+      "path": "avalonia.controls.datagrid/11.2.3",
+      "hashPath": "avalonia.controls.datagrid.11.2.3.nupkg.sha512"
+    },
     "Avalonia.Desktop/11.2.3": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-dX3zfgWplLqcgwQJLeC2ciqxE/GM3iw9HUNI22c8KgAAWMWl52NWCmjW228EPZG+4YbHwq8T40YARO2aQF+yqA==",
       "path": "avalonia.desktop/11.2.3",
       "hashPath": "avalonia.desktop.11.2.3.nupkg.sha512"
+    },
+    "Avalonia.Diagnostics/11.2.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Qld0UvkSLfIuZD7/gS8RIO6ww3jP+xJvsMyqU8evdphPoic7h6LAeY/ppT9NtI0r1KUDT2BpFcVDqPyQH6eSiw==",
+      "path": "avalonia.diagnostics/11.2.3",
+      "hashPath": "avalonia.diagnostics.11.2.3.nupkg.sha512"
     },
     "Avalonia.Fonts.Inter/11.2.3": {
       "type": "package",
@@ -443,6 +535,13 @@
       "sha512": "sha512-gPJWBWaeocvRhSrB977xsfH0Ame14PxRMIgEfezi2bTjNJ43JWzJtALgDfDZYMpZPDdeWU/mwDigR/kD+rJtlw==",
       "path": "avalonia.themes.fluent/11.2.3",
       "hashPath": "avalonia.themes.fluent.11.2.3.nupkg.sha512"
+    },
+    "Avalonia.Themes.Simple/11.2.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Okio7RYUHUk1m/1n6VGrkoq0C3Y3J6RwtrTGEfXPkYMJsL6yPqstJZMYkMFQPISUr8TYUNVKv82hL1qLRw7hwA==",
+      "path": "avalonia.themes.simple/11.2.3",
+      "hashPath": "avalonia.themes.simple.11.2.3.nupkg.sha512"
     },
     "Avalonia.Win32/11.2.3": {
       "type": "package",
@@ -492,6 +591,20 @@
       "sha512": "sha512-RPxRXD16KtSs8Yxr2RK9Qs7AwyN9MlpqZIYs0AvfaJwl7RAtVhC0+u2f2SKwX0uMYYd3O98Z+OBA1sj6aWVKQA==",
       "path": "harfbuzzsharp.nativeassets.win32/7.3.0.3",
       "hashPath": "harfbuzzsharp.nativeassets.win32.7.3.0.3.nupkg.sha512"
+    },
+    "Material.Icons/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oMMrh8mKnZwOKZJEI3hc4Y18+/FQDfXSMv21xbX4kq05gcvcD1M2zxrjgNQvygHhP4DTcFmDidqUJRmuPyV9Fg==",
+      "path": "material.icons/2.1.0",
+      "hashPath": "material.icons.2.1.0.nupkg.sha512"
+    },
+    "Material.Icons.Avalonia/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-IEuKf8mrByuxvjsM9LPWs+Ic0JPViDwZS7q1FzpHpu3QCEKOIriDiMNI6GaAtUA3uzz9OfAbd5vSjTi6SVbJrQ==",
+      "path": "material.icons.avalonia/2.1.0",
+      "hashPath": "material.icons.avalonia.2.1.0.nupkg.sha512"
     },
     "MicroCom.Runtime/0.11.0": {
       "type": "package",

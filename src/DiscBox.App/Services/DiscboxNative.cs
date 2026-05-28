@@ -47,8 +47,17 @@ internal static class DiscboxNative
     public static extern int discbox_rename(
         IntPtr ctx, string old_path, string new_path);
 
-    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int discbox_delete(IntPtr ctx, string virtual_path);
+    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern int discbox_delete(
+        IntPtr ctx,
+        [MarshalAs(UnmanagedType.LPStr)] string virtual_path);
+
+    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern int discbox_delete_with_progress(
+        IntPtr ctx,
+        [MarshalAs(UnmanagedType.LPStr)] string virtual_path,
+        ProgressCallback? progress_cb,
+        IntPtr userdata);
 
     // ── Transfer ──────────────────────────────────────────────
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]

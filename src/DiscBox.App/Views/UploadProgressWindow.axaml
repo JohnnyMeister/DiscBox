@@ -1,49 +1,73 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:DiscBox.ViewModels"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.UploadProgressWindow"
         x:DataType="vm:UploadProgressViewModel"
         Title="DiscBox — Upload"
-        Width="420" Height="200"
+        Width="500" Height="290"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
-        Background="#0f1117">
+        Background="#0B0F19"
+        ExtendClientAreaToDecorationsHint="True">
 
-  <StackPanel Margin="32" Spacing="16">
+  <Grid RowDefinitions="30,*">
+    <!-- TitleBar background -->
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="A enviar ficheiro..." 
+                 Foreground="#8E9297" FontSize="12" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
 
-    <TextBlock Text="{Binding FileName}"
-               Foreground="#e3e5e8" FontSize="14" FontWeight="SemiBold"
-               TextTrimming="CharacterEllipsis"/>
+    <Border Grid.Row="1" Background="#161B29" CornerRadius="0" Padding="32">
+      <StackPanel Spacing="16">
 
-    <ProgressBar Value="{Binding Percent}"
-                 Minimum="0" Maximum="100"
-                 Height="8" CornerRadius="4"
-                 Foreground="#5865f2" Background="#2e3148"/>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <material:MaterialIcon Kind="CloudUpload" Foreground="#00E5FF" Width="28" Height="28"/>
+          <TextBlock Text="{Binding FileName}"
+                     Foreground="#E3E5E8" FontSize="15" FontWeight="Bold"
+                     TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+        </StackPanel>
 
-    <Grid ColumnDefinitions="*,Auto">
-      <TextBlock Grid.Column="0"
-                 Text="{Binding StatusText}"
-                 Foreground="#8e9297" FontSize="12"/>
-      <TextBlock Grid.Column="1"
-                 Text="{Binding Percent, StringFormat='{}{0}%'}"
-                 Foreground="#5865f2" FontSize="12" FontWeight="SemiBold"/>
-    </Grid>
+        <ProgressBar Value="{Binding Percent}"
+                     Minimum="0" Maximum="100"
+                     Height="10" CornerRadius="5"
+                     Foreground="#00E5FF" Background="#2A324A" Margin="0,8,0,0"/>
 
-    <Grid ColumnDefinitions="*,Auto">
-      <TextBlock Grid.Column="0"
-                 Text="{Binding EtaText}"
-                 Foreground="#8e9297" FontSize="11"/>
-      <TextBlock Grid.Column="1"
-                 Text="{Binding SpeedText}"
-                 Foreground="#57f287" FontSize="11" FontWeight="SemiBold"/>
-    </Grid>
+        <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+          <TextBlock Grid.Column="0"
+                     Text="{Binding StatusText}"
+                     Foreground="#8E9297" FontSize="13"
+                     TextTrimming="CharacterEllipsis"/>
+          <TextBlock Grid.Column="1"
+                     Text="{Binding Percent, StringFormat='{}{0}%'}"
+                     Foreground="#00E5FF" FontSize="13" FontWeight="Bold"/>
+        </Grid>
 
-    <Button Content="Cancelar"
-            Command="{Binding CancelCommand}"
-            IsEnabled="{Binding !IsDone}"
-            HorizontalAlignment="Right"
-            Background="#2e3148" Foreground="#e3e5e8"
-            CornerRadius="6" Padding="16,6"/>
+        <TextBlock Text="{Binding DetailText}"
+                   Foreground="#687086" FontSize="12"
+                   TextTrimming="CharacterEllipsis"/>
 
-  </StackPanel>
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+            <material:MaterialIcon Kind="ClockOutline" Foreground="#8E9297" Width="14" Height="14"/>
+            <TextBlock Text="{Binding EtaText}" Foreground="#8E9297" FontSize="12"/>
+          </StackPanel>
+          
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <material:MaterialIcon Kind="Speedometer" Foreground="#00E5FF" Width="14" Height="14"/>
+            <TextBlock Text="{Binding SpeedText}" Foreground="#00E5FF" FontSize="12" FontWeight="Bold"/>
+          </StackPanel>
+        </Grid>
+
+        <Button Content="Cancelar"
+                Command="{Binding CancelCommand}"
+                IsEnabled="{Binding !IsDone}"
+                HorizontalAlignment="Right"
+                Background="#2A324A" Foreground="#E3E5E8"
+                CornerRadius="8" Padding="20,8" FontWeight="SemiBold" Margin="0,8,0,0"/>
+
+      </StackPanel>
+    </Border>
+  </Grid>
 </Window>

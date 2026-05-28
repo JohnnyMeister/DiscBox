@@ -1,29 +1,52 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.PropertiesDialog"
         Title="Propriedades"
-        Width="380" Height="280"
+        Width="440" Height="360"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
-        Background="#0f1117">
+        Background="#0B0F19"
+        ExtendClientAreaToDecorationsHint="True">
 
-  <StackPanel Margin="28" Spacing="12">
-    <TextBlock x:Name="NameText" FontSize="16" FontWeight="Bold" Foreground="#e3e5e8"/>
-    <Border Height="1" Background="#2e3148"/>
-    <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ShowGridLines="False">
-      <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo:" Foreground="#8e9297" FontSize="12"/>
-      <TextBlock x:Name="TypeText" Grid.Row="0" Grid.Column="1" Foreground="#e3e5e8" FontSize="12"/>
-      <TextBlock Grid.Row="1" Grid.Column="0" Text="Tamanho:" Foreground="#8e9297" FontSize="12" Margin="0,8,0,0"/>
-      <TextBlock x:Name="SizeText" Grid.Row="1" Grid.Column="1" Foreground="#e3e5e8" FontSize="12" Margin="0,8,0,0"/>
-      <TextBlock Grid.Row="2" Grid.Column="0" Text="Caminho:" Foreground="#8e9297" FontSize="12" Margin="0,8,0,0"/>
-      <TextBlock x:Name="PathText" Grid.Row="2" Grid.Column="1" Foreground="#e3e5e8" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap"/>
-      <TextBlock Grid.Row="3" Grid.Column="0" Text="Criado em:" Foreground="#8e9297" FontSize="12" Margin="0,8,0,0"/>
-      <TextBlock x:Name="CreatedText" Grid.Row="3" Grid.Column="1" Foreground="#e3e5e8" FontSize="12" Margin="0,8,0,0"/>
-      <TextBlock Grid.Row="4" Grid.Column="0" Text="Encriptado:" Foreground="#8e9297" FontSize="12" Margin="0,8,0,0"/>
-      <TextBlock x:Name="EncryptedText" Grid.Row="4" Grid.Column="1" Foreground="#e3e5e8" FontSize="12" Margin="0,8,0,0"/>
-    </Grid>
-    <Button Content="Fechar" Click="OnClose" HorizontalAlignment="Right"
-            Background="#2e3148" Foreground="#e3e5e8"
-            CornerRadius="6" Padding="16,7" Margin="0,8,0,0"/>
-  </StackPanel>
+  <Grid RowDefinitions="30,*">
+    <!-- TitleBar background -->
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="Propriedades" 
+                 Foreground="#8E9297" FontSize="12" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+
+    <Border Grid.Row="1" Background="#161B29" CornerRadius="0" Padding="28">
+      <StackPanel Spacing="20">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <material:MaterialIcon Kind="Information" Foreground="#6A0DAD" Width="32" Height="32"/>
+          <TextBlock x:Name="NameText" FontSize="18" FontWeight="Bold" Foreground="#E3E5E8" VerticalAlignment="Center"/>
+        </StackPanel>
+        
+        <Border Height="1" Background="#2A324A"/>
+        
+        <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ShowGridLines="False">
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold"/>
+          <TextBlock x:Name="TypeText" Grid.Row="0" Grid.Column="1" Foreground="#00E5FF" FontSize="13"/>
+          
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="Tamanho:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
+          <TextBlock x:Name="SizeText" Grid.Row="1" Grid.Column="1" Foreground="#E3E5E8" FontSize="13" Margin="0,12,0,0"/>
+          
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="Caminho:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
+          <TextBlock x:Name="PathText" Grid.Row="2" Grid.Column="1" Foreground="#E3E5E8" FontSize="13" Margin="0,12,0,0" TextWrapping="Wrap"/>
+          
+          <TextBlock Grid.Row="3" Grid.Column="0" Text="Criado em:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
+          <TextBlock x:Name="CreatedText" Grid.Row="3" Grid.Column="1" Foreground="#E3E5E8" FontSize="13" Margin="0,12,0,0"/>
+          
+          <TextBlock Grid.Row="4" Grid.Column="0" Text="Encriptado:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
+          <TextBlock x:Name="EncryptedText" Grid.Row="4" Grid.Column="1" Foreground="#E3E5E8" FontSize="13" Margin="0,12,0,0"/>
+        </Grid>
+        
+        <Button Content="Fechar" Click="OnClose" HorizontalAlignment="Right"
+                Background="#2A324A" Foreground="#E3E5E8"
+                CornerRadius="8" Padding="20,10" FontWeight="SemiBold" Margin="0,12,0,0"/>
+      </StackPanel>
+    </Border>
+  </Grid>
 </Window>

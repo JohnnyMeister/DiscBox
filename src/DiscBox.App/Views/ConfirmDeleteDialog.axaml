@@ -1,29 +1,44 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.ConfirmDeleteDialog"
         Title="Confirmar eliminação"
-        Width="380" Height="170"
+        Width="420" Height="200"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
-        Background="#0f1117">
+        Background="#0B0F19"
+        ExtendClientAreaToDecorationsHint="True">
 
-  <StackPanel Margin="28" Spacing="16">
+  <Grid RowDefinitions="30,*">
+    <!-- TitleBar background (custom) -->
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="Confirmar eliminação" 
+                 Foreground="#8E9297" FontSize="12" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
 
-    <TextBlock x:Name="MessageText"
-               Foreground="#e3e5e8" FontSize="13"
-               TextWrapping="Wrap"/>
+    <Border Grid.Row="1" Background="#161B29" CornerRadius="0" Padding="28">
+      <StackPanel Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <material:MaterialIcon Kind="Alert" Foreground="#FF4B4B" Width="32" Height="32"/>
+          <StackPanel VerticalAlignment="Center" Spacing="4">
+            <TextBlock x:Name="MessageText"
+                       Foreground="#E3E5E8" FontSize="14" FontWeight="SemiBold"
+                       TextWrapping="Wrap"/>
+            <TextBlock Text="Esta ação não pode ser desfeita."
+                       Foreground="#8E9297" FontSize="12"/>
+          </StackPanel>
+        </StackPanel>
 
-    <TextBlock Text="Esta ação não pode ser desfeita."
-               Foreground="#8e9297" FontSize="12"/>
-
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button Content="Cancelar" Click="OnCancel"
-              Background="#2e3148" Foreground="#e3e5e8"
-              CornerRadius="6" Padding="16,7"/>
-      <Button Content="Apagar" Click="OnConfirm"
-              Background="#ed4245" Foreground="White"
-              CornerRadius="6" Padding="16,7"/>
-    </StackPanel>
-
-  </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,16,0,0">
+          <Button Content="Cancelar" Click="OnCancel"
+                  Background="#2A324A" Foreground="#E3E5E8"
+                  CornerRadius="8" Padding="20,10" FontWeight="SemiBold"/>
+          <Button Content="Apagar" Click="OnConfirm"
+                  Background="#FF4B4B" Foreground="White"
+                  CornerRadius="8" Padding="20,10" FontWeight="Bold"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
 </Window>

@@ -4,7 +4,11 @@ using DiscBox.Models;
 using DiscBox.Services;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Avalonia;
 using Avalonia.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -15,6 +19,7 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly ConfigService _config;
     private readonly DiscboxService? _discbox;
+    private static readonly TimeSpan DeleteTimeout = TimeSpan.FromHours(6);
 
     private static IStorageProvider? StorageProvider =>
         (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
@@ -35,12 +40,19 @@ public partial class MainViewModel : ObservableObject
     // BreadcrumbItem instead of tuple — tuples don't work with compiled Avalonia bindings
     public ObservableCollection<BreadcrumbItem> Breadcrumbs { get; } = [];
 
+    public ObservableCollection<ConfigService.QuickAccessFolder> QuickAccessFolders { get; } = [];
+
     public MainViewModel(ConfigService config)
     {
         _config   = config;
         DriveName = config.Current.DriveName;
+        foreach (var folder in config.Current.QuickAccessFolders)
+        {
+            QuickAccessFolders.Add(folder);
+        }
         _discbox = new DiscboxService(config.Current.WebhookUrl, config.Current.DbPath);
         _ = NavigateToAsync("/");
+
     }
 
     [RelayCommand]
@@ -75,6 +87,12 @@ public partial class MainViewModel : ObservableObject
     private async Task DownloadEntryAsync(FileEntry? entry)
     {
         if (entry is null || StorageProvider is null) return;
+
+        if (entry.IsFolder)
+        {
+            await DownloadFolderAsync(entry);
+            return;
+        }
 
         var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
         {
@@ -126,6 +144,121 @@ public partial class MainViewModel : ObservableObject
         progressWindow.Close();
     }
 
+    private async Task DownloadFolderAsync(FileEntry folderEntry)
+    {
+        if (StorageProvider is null || _discbox is null) return;
+
+        // Ask the user for a destination folder
+        var folders = await StorageProvider.OpenFolderPickerAsync(
+            new Avalonia.Platform.Storage.FolderPickerOpenOptions
+            {
+                Title = $"Escolhe onde guardar a pasta '{folderEntry.Name}'",
+                AllowMultiple = false,
+            });
+
+        if (folders is null || folders.Count == 0) return;
+        var destRoot = folders[0].TryGetLocalPath();
+        if (destRoot is null) return;
+
+        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+
+        // Collect all files recursively
+        StatusText = $"A analisar pasta '{folderEntry.Name}'…";
+        var allFiles = await Task.Run(() => CollectFilesRecursive(folderEntry.VirtualPath));
+
+        if (allFiles.Count == 0)
+        {
+            StatusText = $"A pasta '{folderEntry.Name}' está vazia.";
+            return;
+        }
+
+        var progressVm = new UploadProgressViewModel
+        {
+            FileName = $"⬇ {folderEntry.Name} ({allFiles.Count} ficheiros)"
+        };
+        var progressWindow = new Views.UploadProgressWindow { DataContext = progressVm };
+        progressWindow.Show(mainWindow!);
+
+        int downloaded = 0;
+        int failed = 0;
+        string? lastError = null;
+
+        // The base path to strip from virtual paths so we recreate only the relative structure
+        var basePath = folderEntry.VirtualPath.TrimEnd('/');
+
+        foreach (var file in allFiles)
+        {
+            // Build local path preserving folder structure
+            // e.g. virtualPath="/Photos/Vacation/img.jpg", basePath="/Photos"
+            //   → relative = "/Vacation/img.jpg" → local = destRoot\Photos\Vacation\img.jpg
+            var relativePath = file.VirtualPath[basePath.Length..].TrimStart('/');
+            var localFilePath = System.IO.Path.Combine(destRoot, folderEntry.Name, relativePath.Replace('/', '\\'));
+
+            // Create local directories as needed
+            var localDir = System.IO.Path.GetDirectoryName(localFilePath);
+            if (localDir is not null)
+                System.IO.Directory.CreateDirectory(localDir);
+
+            // Update progress UI with current file name
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                progressVm.FileName = $"⬇ [{downloaded + 1}/{allFiles.Count}] {file.Name}");
+
+            bool ok = false;
+            try
+            {
+                ok = await Task.Run(() =>
+                    _discbox.Download(file.VirtualPath, localFilePath,
+                        (done, total, ci, cc) =>
+                        {
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                progressVm.Update(done, total, ci, cc));
+                        }));
+                if (!ok) lastError = _discbox.LastError();
+            }
+            catch (Exception ex) { lastError = ex.Message; }
+
+            if (ok)
+                downloaded++;
+            else
+                failed++;
+        }
+
+        if (failed == 0)
+        {
+            progressVm.Complete(folderEntry.Name);
+            StatusText = $"✓ Pasta '{folderEntry.Name}' descarregada — {downloaded} ficheiro(s)!";
+        }
+        else
+        {
+            progressVm.Error($"{failed} ficheiro(s) falharam");
+            StatusText = $"⚠ {downloaded} OK, {failed} erro(s): {lastError}";
+        }
+
+        await Task.Delay(3000);
+        progressWindow.Close();
+    }
+
+    /// <summary>
+    /// Recursively collects all files (not folders) inside a virtual path.
+    /// </summary>
+    private List<FileEntry> CollectFilesRecursive(string virtualPath)
+    {
+        var result = new List<FileEntry>();
+        if (_discbox is null) return result;
+
+        var entries = _discbox.List(virtualPath);
+        foreach (var entry in entries)
+        {
+            if (entry.IsFolder)
+                result.AddRange(CollectFilesRecursive(entry.VirtualPath));
+            else
+                result.Add(entry);
+        }
+        return result;
+    }
+
     [RelayCommand]
     private async Task GoUpAsync()
     {
@@ -144,7 +277,7 @@ public partial class MainViewModel : ObservableObject
             ?.MainWindow;
 
         var dialog = new Views.NewFolderDialog();
-        var result = await dialog.ShowDialog<string?>(mainWindow);
+        var result = await dialog.ShowDialog<string?>(mainWindow!);
 
         if (string.IsNullOrWhiteSpace(result)) return;
 
@@ -227,24 +360,259 @@ public partial class MainViewModel : ObservableObject
     {
         if (entry is null) return;
 
-        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
-            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
-            ?.MainWindow;
+        try
+        {
+            var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+                as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+                ?.MainWindow;
 
-        var dialog = new Views.ConfirmDeleteDialog(entry.Name, entry.IsFolder);
-        var confirmed = await dialog.ShowDialog<bool>(mainWindow);
+            var dialog = new Views.ConfirmDeleteDialog(entry.Name, entry.IsFolder);
+            var confirmed = await dialog.ShowDialog<bool>(mainWindow!);
 
-        if (!confirmed) return;
+            if (!confirmed) return;
 
-        StatusText = $"A apagar {entry.Name}...";
-        bool ok = await Task.Run(() => _discbox?.Delete(entry.VirtualPath) ?? false);
+            var progressVm = new DeleteProgressViewModel();
+            var cancelRequested = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            progressVm.CancelRequested += () => cancelRequested.TrySetResult(true);
+            progressVm.Start(entry.Name);
+            var progressWindow = new Views.DeleteProgressWindow { DataContext = progressVm };
+            progressWindow.Show(mainWindow!);
 
-        if (ok)
-            StatusText = $"✓ '{entry.Name}' apagado!";
-        else
-            StatusText = $"✗ Erro ao apagar: {_discbox?.LastError()}";
+            StatusText = $"A apagar {entry.Name}...";
+            bool ok = false;
+            string? erro = null;
+            var deleteTask = DeleteOnDedicatedThreadAsync(
+                entry.VirtualPath,
+                progress => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    progressVm.Update(progress.Done, progress.Total, progress.CurrentPath)));
+            var timeoutTask = Task.Delay(DeleteTimeout);
+            var finishedTask = await Task.WhenAny(deleteTask, cancelRequested.Task, timeoutTask);
 
-        await RefreshAsync();
+            if (finishedTask == cancelRequested.Task)
+            {
+                StatusText = "Cancelado";
+                progressWindow.Close();
+                _ = deleteTask.ContinueWith(async t =>
+                {
+                    if (!t.IsFaulted && t.Result.Ok)
+                    {
+                        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            await RefreshAsync();
+                        });
+                    }
+                    else if (t.IsFaulted)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Delete] background error: {t.Exception}");
+                    }
+                }, TaskScheduler.Default);
+                return;
+            }
+
+            if (finishedTask == timeoutTask)
+            {
+                erro = $"timeout apos {(int)DeleteTimeout.TotalHours}h";
+                progressVm.Error(erro);
+                StatusText = $"✗ Erro ao apagar: {erro}";
+                _ = deleteTask.ContinueWith(async t =>
+                {
+                    if (!t.IsFaulted && t.Result.Ok)
+                    {
+                        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            await RefreshAsync();
+                        });
+                    }
+                }, TaskScheduler.Default);
+                await Task.Delay(2500);
+                progressWindow.Close();
+                return;
+            }
+
+            try
+            {
+                var result = await deleteTask;
+                ok = result.Ok;
+                erro = result.Error;
+            }
+            catch (Exception ex)
+            {
+                erro = ex.Message;
+                ok = false;
+            }
+
+            if (ok)
+            {
+                progressVm.Complete(entry.Name);
+                StatusText = $"✓ '{entry.Name}' apagado!";
+            }
+            else
+            {
+                progressVm.Error(erro ?? "desconhecido");
+                StatusText = $"✗ Erro ao apagar: {erro}";
+            }
+
+            await Task.Delay(2000);
+            progressWindow.Close();
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"✗ Erro (Delete): {ex.Message}";
+        }
+    }
+
+    private Task<(bool Ok, string? Error)> DeleteOnDedicatedThreadAsync(
+        string virtualPath,
+        Action<DeleteHelperProgress>? onProgress)
+    {
+        var tcs = new TaskCompletionSource<(bool Ok, string? Error)>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var webhookUrl = _config.Current.WebhookUrl;
+        var dbPath = string.IsNullOrWhiteSpace(_config.Current.DbPath)
+            ? ConfigService.DefaultDbPath
+            : _config.Current.DbPath;
+
+        var worker = new Thread(() =>
+        {
+            string? requestPath = null;
+            string? resultPath = null;
+            string? progressPath = null;
+            string? lastProgressJson = null;
+            try
+            {
+                LogDelete($"START {virtualPath}");
+
+                var exePath = Path.Combine(AppContext.BaseDirectory, "DiscBox.exe");
+                if (!File.Exists(exePath) && !string.IsNullOrWhiteSpace(Environment.ProcessPath))
+                    exePath = Environment.ProcessPath;
+
+                var id = Guid.NewGuid().ToString("N");
+                requestPath = Path.Combine(Path.GetTempPath(), $"discbox-delete-{id}.json");
+                resultPath = Path.Combine(Path.GetTempPath(), $"discbox-delete-{id}.result.json");
+                progressPath = Path.Combine(Path.GetTempPath(), $"discbox-delete-{id}.progress.json");
+
+                var request = new DeleteHelperRequest
+                {
+                    WebhookUrl = webhookUrl,
+                    DbPath = dbPath,
+                    VirtualPath = virtualPath,
+                    ResultPath = resultPath,
+                    ProgressPath = progressPath
+                };
+                File.WriteAllText(requestPath, JsonSerializer.Serialize(request));
+
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                startInfo.ArgumentList.Add("--delete-helper");
+                startInfo.ArgumentList.Add(requestPath);
+
+                using var process = Process.Start(startInfo);
+                if (process is null)
+                {
+                    LogDelete($"HELPER_START_FAIL {virtualPath}");
+                    tcs.TrySetResult((false, "não foi possível iniciar o helper de delete"));
+                    return;
+                }
+
+                LogDelete($"HELPER_PID {process.Id} {virtualPath}");
+                var startedAt = DateTimeOffset.Now;
+                while (!process.WaitForExit(500))
+                {
+                    ReportDeleteProgress(progressPath, onProgress, ref lastProgressJson);
+                    if (DateTimeOffset.Now - startedAt > DeleteTimeout)
+                    {
+                        try { process.Kill(entireProcessTree: true); } catch { }
+                        LogDelete($"HELPER_TIMEOUT {virtualPath}");
+                        tcs.TrySetResult((false, $"timeout apos {(int)DeleteTimeout.TotalHours}h"));
+                        return;
+                    }
+                }
+                ReportDeleteProgress(progressPath, onProgress, ref lastProgressJson);
+
+                DeleteHelperResult? result = null;
+                if (File.Exists(resultPath))
+                {
+                    var json = File.ReadAllText(resultPath);
+                    result = JsonSerializer.Deserialize<DeleteHelperResult>(json);
+                }
+
+                var ok = result?.Ok ?? process.ExitCode == 0;
+                var error = result?.Error ?? (ok ? null : $"helper terminou com código {process.ExitCode}");
+                LogDelete($"END {virtualPath} ok={ok} exit={process.ExitCode} error={error}");
+                tcs.TrySetResult((ok, error));
+            }
+            catch (Exception ex)
+            {
+                LogDelete($"EXCEPTION {virtualPath} {ex}");
+                tcs.TrySetResult((false, ex.Message));
+            }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(requestPath))
+                    try { File.Delete(requestPath); } catch { }
+                if (!string.IsNullOrWhiteSpace(resultPath))
+                    try { File.Delete(resultPath); } catch { }
+                if (!string.IsNullOrWhiteSpace(progressPath))
+                    try { File.Delete(progressPath); } catch { }
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "DiscBox delete worker"
+        };
+
+        worker.Start();
+        return tcs.Task;
+    }
+
+    private static void ReportDeleteProgress(
+        string? progressPath,
+        Action<DeleteHelperProgress>? onProgress,
+        ref string? lastProgressJson)
+    {
+        if (string.IsNullOrWhiteSpace(progressPath) || onProgress is null)
+            return;
+
+        try
+        {
+            if (!File.Exists(progressPath))
+                return;
+
+            var json = File.ReadAllText(progressPath);
+            if (string.IsNullOrWhiteSpace(json) || json == lastProgressJson)
+                return;
+
+            var progress = JsonSerializer.Deserialize<DeleteHelperProgress>(json);
+            if (progress is null)
+                return;
+
+            lastProgressJson = json;
+            onProgress(progress);
+        }
+        catch
+        {
+            // The helper may be writing the file while we poll it.
+        }
+    }
+
+    private static void LogDelete(string message)
+    {
+        try
+        {
+            Directory.CreateDirectory(ConfigService.AppDataDir);
+            var line = $"{DateTimeOffset.Now:O} {message}{Environment.NewLine}";
+            File.AppendAllText(Path.Combine(ConfigService.AppDataDir, "delete.log"), line);
+        }
+        catch
+        {
+            // Best-effort diagnostics only.
+        }
     }
 
     [RelayCommand]
@@ -325,7 +693,7 @@ public partial class MainViewModel : ObservableObject
             ?.MainWindow;
 
         var dialog = new Views.RenameDialog(entry.Name);
-        var newName = await dialog.ShowDialog<string?>(mainWindow);
+        var newName = await dialog.ShowDialog<string?>(mainWindow!);
 
         if (string.IsNullOrWhiteSpace(newName) || newName == entry.Name) return;
 
@@ -396,4 +764,33 @@ public partial class MainViewModel : ObservableObject
         ],
         _ => []
     };
+
+    [RelayCommand]
+    private void AddToQuickAccess(FileEntry? entry)
+    {
+        if (entry is null || !entry.IsFolder) return;
+        
+        // Evita duplicados
+        foreach (var qaf in QuickAccessFolders)
+        {
+            if (qaf.Path == entry.VirtualPath) return;
+        }
+
+        var folder = new ConfigService.QuickAccessFolder { Name = entry.Name, Path = entry.VirtualPath };
+        QuickAccessFolders.Add(folder);
+        _config.Current.QuickAccessFolders.Add(folder);
+        _config.Save(_config.Current);
+        StatusText = $"✓ '{entry.Name}' adicionado ao Quick Access!";
+    }
+
+    [RelayCommand]
+    private void RemoveFromQuickAccess(ConfigService.QuickAccessFolder? folder)
+    {
+        if (folder is null) return;
+
+        QuickAccessFolders.Remove(folder);
+        _config.Current.QuickAccessFolders.Remove(folder);
+        _config.Save(_config.Current);
+        StatusText = $"✓ '{folder.Name}' removido do Quick Access!";
+    }
 }

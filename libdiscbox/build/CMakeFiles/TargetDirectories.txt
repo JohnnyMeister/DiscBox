@@ -1,0 +1,12 @@
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/discbox_shared.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/discbox_static.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/test_chunk.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/test_db.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/discbox_cli.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/test.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/edit_cache.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/rebuild_cache.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/list_install_components.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/install.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/install/local.dir
+C:/Users/jpmmm/Downloads/libdiscbox/build/CMakeFiles/install/strip.dir

@@ -63,3 +63,10 @@ C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\obj\Debug\net8.0\DiscBox..1
 C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\obj\Debug\net8.0\DiscBox.App.genruntimeconfig.cache
 C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\obj\Debug\net8.0\ref\DiscBox.dll
 C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\obj\Debug\net8.0\DiscBox.App.sourcelink.json
+C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\bin\Debug\net8.0\Material.Icons.dll
+C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\bin\Debug\net8.0\Material.Icons.Avalonia.dll
+C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\bin\Debug\net8.0\Avalonia.Controls.ColorPicker.dll
+C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\bin\Debug\net8.0\Avalonia.Controls.DataGrid.dll
+C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\bin\Debug\net8.0\Avalonia.Diagnostics.dll
+C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\bin\Debug\net8.0\Avalonia.Themes.Simple.dll
+C:\Users\jpmmm\Desktop\cenas\DiscBox\src\DiscBox.App\bin\Debug\net8.0\libdiscbox.dll

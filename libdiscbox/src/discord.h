@@ -1,0 +1,124 @@
+/**
+ * discord.h — Discord Webhook HTTP client
+ *
+ * Handles all communication with the Discord API:
+ *   - Upload a chunk as a webhook attachment (POST multipart/form-data)
+ *   - Delete a message (DELETE /webhooks/{id}/{token}/messages/{msg_id})
+ *   - Validate a webhook URL (GET)
+ *   - Download a file from the Discord CDN (GET attachment URL)
+ *
+ * Rate limiting is handled automatically via the ratelimit module.
+ */
+
+#ifndef DISCBOX_DISCORD_H
+#define DISCBOX_DISCORD_H
+
+#include "ratelimit.h"
+#include <stddef.h>
+#include <stdint.h>
+
+/* Maximum length for a Discord message ID (snowflake as string) */
+#define DISCORD_MSG_ID_LEN 32
+
+/* Maximum Discord CDN attachment URL length */
+#define DISCORD_URL_LEN 512
+
+/**
+ * Result of uploading one chunk.
+ */
+typedef struct {
+  char message_id[DISCORD_MSG_ID_LEN]; /* Discord snowflake ID of the posted
+                                          message */
+  char
+      attachment_url[DISCORD_URL_LEN]; /* Direct CDN URL of the uploaded file */
+} discord_upload_result_t;
+
+/**
+ * Persistent HTTP client context.
+ * Wraps a libcurl easy handle and rate limit state.
+ */
+typedef struct {
+  void *curl; /* CURL* handle (opaque to avoid including curl.h in header) */
+  ratelimit_t ratelimit;
+  long timeout_sec;
+  int max_retries;
+  char *last_error; /* Last error message string (owned) */
+} discord_client_t;
+
+/**
+ * Initialise a Discord HTTP client.
+ *
+ * @param client        Client to initialise.
+ * @param timeout_sec   HTTP request timeout in seconds (0 = default 60s).
+ * @param max_retries   Max retries per request on transient errors (0 = default
+ * 5).
+ * @return              0 on success, -1 on error (e.g. curl init failed).
+ */
+int discord_client_init(discord_client_t *client, long timeout_sec,
+                        int max_retries);
+
+/**
+ * Destroy a client and release all resources.
+ */
+void discord_client_free(discord_client_t *client);
+
+/**
+ * Validate a webhook URL by making a GET request.
+ *
+ * @return  0 if valid, -1 if the webhook is invalid or unreachable.
+ */
+int discord_validate_webhook(discord_client_t *client, const char *webhook_url);
+
+/**
+ * Upload raw bytes as a webhook attachment.
+ *
+ * Sends a multipart/form-data POST to the webhook URL.
+ * Retries automatically on transient errors and rate limits.
+ *
+ * @param client        HTTP client.
+ * @param webhook_url   Full Discord webhook URL.
+ * @param filename      Filename that Discord will show for the attachment.
+ * @param data          Raw bytes to upload.
+ * @param data_size     Number of bytes in data.
+ * @param[out] result   Filled with message_id and attachment_url on success.
+ * @return              0 on success, -1 on error.
+ */
+int discord_upload_chunk(discord_client_t *client, const char *webhook_url,
+                         const char *filename, const uint8_t *data,
+                         size_t data_size, discord_upload_result_t *result);
+
+/**
+ * Download bytes from a Discord CDN URL into a buffer.
+ *
+ * The buffer is allocated by this function and must be freed by the caller.
+ *
+ * @param client          HTTP client.
+ * @param cdn_url         Full attachment CDN URL.
+ * @param[out] out_data   Allocated buffer containing the downloaded bytes.
+ * @param[out] out_size   Number of bytes downloaded.
+ * @return                0 on success, -1 on error.
+ */
+int discord_download_url(discord_client_t *client, const char *cdn_url,
+                         uint8_t **out_data, size_t *out_size);
+
+/**
+ * Delete a Discord message posted by the webhook.
+ * Used during discbox_delete() to remove chunk messages from Discord.
+ *
+ * @param webhook_url  Full Discord webhook URL.
+ * @param message_id   ID of the message to delete.
+ * @return             0 on success, -1 on error.
+ */
+int discord_delete_message(discord_client_t *client, const char *webhook_url,
+                           const char *message_id);
+
+/**
+ * Get the last error message from a client.
+ */
+const char *discord_client_last_error(discord_client_t *client);
+
+int discord_fetch_message(discord_client_t *client, const char *webhook_url,
+                          const char *message_id, uint8_t **out_data,
+                          size_t *out_size);
+
+#endif /* DISCBOX_DISCORD_H */

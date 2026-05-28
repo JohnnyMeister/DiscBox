@@ -75,6 +75,23 @@ public class DiscboxService : IDisposable
         return DiscboxNative.discbox_delete(_ctx, virtualPath) == 0;
     }
 
+    public bool Delete(string virtualPath, Action<string, long, long, int, int>? onProgress)
+    {
+        if (!IsAvailable) return false;
+
+        DiscboxNative.ProgressCallback? cb = null;
+        if (onProgress != null)
+        {
+            cb = (_, vp, done, total, ci, cc) =>
+            {
+                onProgress(Marshal.PtrToStringAnsi(vp) ?? virtualPath, done, total, ci, cc);
+                return 0;
+            };
+        }
+
+        return DiscboxNative.discbox_delete_with_progress(_ctx, virtualPath, cb, IntPtr.Zero) == 0;
+    }
+
     /// <summary>
     /// Importa um ficheiro do Disbox directamente para o SQLite local
     /// sem fazer upload — apenas regista os metadados.

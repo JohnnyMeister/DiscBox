@@ -1,24 +1,47 @@
 # DiscBox
 
-DiscBox is an experimental open-source personal cloud drive that uses Discord webhooks as a free remote storage backend.
+DiscBox is an experimental open-source personal cloud drive that uses Discord webhooks as a remote storage backend.
 
-The project focuses on creating a modern desktop cloud storage experience with:
+It provides a modern desktop cloud storage experience built on top of a virtual filesystem and chunk-based storage architecture.
 
-* File uploads/downloads
-* Folder management
-* Chunked file storage
-* Virtual filesystem support
-* Local database indexing
-* Discord-backed storage
-* Modern Avalonia UI
-* Transfer progress tracking
-* Encrypted storage support
+DiscBox combines:
 
-> ⚠️ DiscBox is currently in active development and should be considered experimental.
+* Native high-performance backend code (C)
+* Modern Avalonia desktop UI
+* Discord-based storage
+* Local metadata indexing
+* Chunk reconstruction
+* Per-drive encryption support
+* Multi-drive/webhook architecture
+
+⚠️ DiscBox is still under active development and should currently be considered experimental software.
 
 ---
 
 # Features
+
+## Multi-Drive System
+
+DiscBox now supports multiple independent drives/webhooks.
+
+Each drive can have:
+
+* Its own Discord webhook
+* Independent SQLite database
+* Independent encryption state
+* Custom drive name
+
+The Drive section now behaves similarly to Windows Explorer drives.
+
+Features:
+
+* Add new drives/webhooks
+* Rename drives
+* Switch between drives
+* Per-drive encryption toggle
+* Independent storage isolation
+
+---
 
 ## File Explorer
 
@@ -27,174 +50,271 @@ The project focuses on creating a modern desktop cloud storage experience with:
 * Breadcrumb navigation
 * Context menu support
 * File/folder icons
-* Sorting-ready architecture
 * Status messages and operation feedback
+* Sorting-ready architecture
+
+---
 
 ## File Operations
 
 * Upload files
 * Download files
 * Delete files/folders
-* Rename entries
+* Rename files/folders
+* Move files between folders
 * Create folders
 * Copy virtual paths
-* File properties dialog
 * Cut / Copy / Paste support
-* Move files between folders
+* Context menu actions
+
+---
 
 ## Transfer System
 
 * Chunked uploads using Discord webhooks
-* Upload progress window
-* Live speed display
+* Stable chunk reconstruction system
+* Automatic file reconstruction from chunks
+* Fresh Discord CDN URL retrieval
+* Automatic expired URL recovery
+* Upload progress tracking
+* Download progress tracking
+* Delete progress tracking
+* Transfer cancellation support
+* Real-time transfer speed display
 * ETA estimation
+* Chunk-level progress reporting
 * Large file support
 * Background async operations
-* Transfer cancellation support
-
-## Storage System
-
-* Virtual filesystem
-* SQLite metadata database
-* Chunk-based storage architecture
-* Discord attachment storage
-* File reconstruction from chunks
 
 ---
 
-# Current Project Status
+# Encryption System
 
-DiscBox is functional for many basic operations, but the project is still heavily under development.
+DiscBox now supports real encrypted storage.
 
-## Currently Working
+Encryption is implemented directly inside the native libdiscbox backend using:
+
+* AES-256-GCM encryption
+* Per-drive encryption state
+* Automatic decrypt-on-download pipeline
+
+## Encryption Features
+
+* Encrypted uploads stored unreadable on Discord
+* Transparent decryption during download
+* Per-file encryption metadata
+* Encryption toggle per drive
+* Existing files preserve their original encryption state
+
+## Drive Encryption Toggle
+
+Each drive has its own encryption toggle:
+
+* Open lock = uploads stored normally
+* Closed lock = uploads encrypted
+
+Changing a drive encryption state only affects future uploads for that drive.
+
+---
+
+# Storage System
+
+* Virtual filesystem abstraction
+* SQLite metadata indexing
+* Discord message-based chunk storage
+* Automatic chunk reconstruction
+* Expired CDN URL recovery
+* Chunk metadata management
+* Background helper processes
+
+---
+
+# Current Status
+
+DiscBox is now stable for core storage operations.
+
+The upload, download, delete, and reconstruction systems are fully operational.
+
+---
+
+# Working Features
+
+✅ Multi-drive/webhook support
+
+✅ Per-drive encryption
+
+✅ AES-256-GCM encrypted uploads
 
 ✅ Uploading files
 
-✅ Creating folders
+✅ Downloading files
 
-✅ File explorer navigation
+✅ Stable chunk reconstruction
+
+✅ Large file support
+
+✅ File deletion (Discord + database sync)
+
+✅ Folder deletion
 
 ✅ Rename operations
 
 ✅ Context menu actions
 
-✅ Chunked storage system
+✅ Transfer progress windows
 
-✅ Progress tracking UI
+✅ Speed + ETA tracking
 
-✅ Large file uploads (improved)
+✅ Virtual filesystem
 
-✅ Virtual filesystem structure
+✅ Automatic Discord CDN URL refresh
 
-✅ Local metadata/database handling
+✅ Duplicate upload prevention
 
-## Known Issues
+✅ Background delete helper process
 
-### Imported DiscBox Files Cannot Be Downloaded
+✅ Multi-chunk transfer support
 
-There is currently a major unresolved bug affecting files imported through DiscBox.
+---
 
-Symptoms:
+# Important Fixes & Improvements
 
-* Some imported videos fail to download correctly
-* Downloaded files may appear corrupted
-* Windows may refuse to open downloaded media files
-* The issue mainly affects files reconstructed from Discord chunks
+## Download System Rewrite
 
-Important:
+The download system was fully rewritten and stabilized.
 
-* Files stored directly on Discord usually remain valid
-* The corruption appears during chunk retrieval or reconstruction
-* The exact root cause is still unknown
+Improvements:
 
-Current investigation areas:
+* Stable chunk reconstruction
+* Expired CDN URL recovery
+* Better rate-limit handling
+* Large file support
+* Chunk ordering fixes
+* Fresh Discord attachment retrieval
 
-* Discord message fetch reliability
-* Chunk ordering validation
-* Missing chunk edge cases
-* CURL handle state issues
-* Discord CDN attachment behavior
-* Chunk reconstruction alignment
+---
 
-### Download System Is Still Work In Progress
+## Discord Cleanup on Delete
 
-The DiscBox download system is still being actively rewritten and stabilized.
+Deleting files/folders now:
 
-Known limitations:
+* Deletes Discord webhook messages/chunks
+* Cleans metadata database
+* Handles missing Discord messages safely
+* Uses a dedicated helper process to avoid UI deadlocks
 
-* Some downloads may fail unexpectedly
-* Imported files are unreliable
-* Chunk reconstruction is not fully stable
-* Error recovery is incomplete
-* Integrity verification is not yet implemented
+---
 
-### Discord API Limitations
+## Duplicate Upload Protection
 
-DiscBox depends heavily on Discord webhook behavior.
+DiscBox now:
 
-Possible external limitations include:
+* Detects duplicate virtual paths before upload
+* Prevents unnecessary Discord uploads
+* Automatically cleans orphaned chunks on failure
 
-* Rate limiting
-* Attachment availability
-* Message endpoint inconsistencies
-* Webhook restrictions
-* CDN propagation delays
+---
+
+## Unicode Upload Fixes
+
+Fixed Discord upload failures caused by:
+
+* Non-ASCII filenames
+* Unicode chunk attachment names
+
+DiscBox now:
+
+* Uses safe ASCII chunk names internally
+* Preserves original filenames in metadata/UI
+
+---
+
+## Improved Progress UI
+
+Transfer windows now display:
+
+* Current chunk
+* Total chunks
+* Bytes processed
+* Transfer speed
+* ETA estimation
+* URL retrieval phase
+* Delete progress status
 
 ---
 
 # Technical Details
 
-## Chunk System
+## Chunk Size
 
-Files are split into chunks before upload.
+Files are split into:
 
-Current chunk size:
+* 10MB chunks
 
-* 10MB per chunk
+This limit exists because of Discord webhook upload restrictions.
 
-This was changed from 25MB after discovering Discord webhook upload limits caused failures for larger chunks.
+---
 
-## Timeouts
+## Transfer Behavior
 
-Transfer timeout limits were removed.
+Uploads/downloads:
 
-Uploads and downloads now continue indefinitely unless:
+* Have no strict timeout
+* Continue until:
 
-* An error occurs
-* The user cancels the operation
+  * completion
+  * user cancellation
+  * unrecoverable error
 
-## UI Stack
+---
 
-Frontend:
+# Architecture
+
+## Frontend
 
 * Avalonia UI
 * C# / .NET
 
-Backend:
+## Backend
 
 * Native C library
 * libcurl
 * SQLite
+* AES-256-GCM crypto implementation
 
 ---
 
 # Roadmap
 
-Planned improvements include:
+Planned improvements before beta:
 
-* Stable download reconstruction
+* Drag & drop uploads
+* Multi-file selection improvements
+* Better preview system
+* UI overhaul/polish
+* Search system
+* Parallel chunk downloads
+* Transfer queue system
+* Resume support
 * File integrity verification
 * Hash validation
-* Retry logic for failed chunks
-* Parallel chunk downloads
-* Drag & drop support
-* Search system
-* Better folder operations
-* Download queue management
-* Multi-threaded transfers
-* Better Discord API abstraction
-* Improved error diagnostics
-* Transfer resume support
+* Better diagnostics/logging
+* Better folder UX
+* Performance optimizations
+
+---
+
+# Known Limitations
+
+DiscBox depends heavily on Discord infrastructure.
+
+Possible limitations include:
+
+* Discord rate limits
+* Webhook restrictions
+* Attachment availability
+* CDN propagation delays
+* Discord API behavior changes
 
 ---
 
@@ -202,9 +322,9 @@ Planned improvements include:
 
 DiscBox is an experimental educational project.
 
-It is not production-ready and should not be used for important or irreplaceable files.
+It is not production-ready and should not be used for important or irreplaceable data.
 
-Because the project relies on Discord infrastructure in unintended ways, stability and long-term compatibility are not guaranteed.
+The project relies on Discord infrastructure in ways it was not originally designed for, so long-term compatibility and reliability are not guaranteed.
 
 ---
 

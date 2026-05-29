@@ -30,7 +30,8 @@ public class DisboxMigrationService
     public async Task<(int folders, int files)> MigrateAsync(
         IProgress<string>? progress = null)
     {
-        var hash = HashWebhook(_config.Current.WebhookUrl);
+        var webhookUrl = _config.Current.ActiveDrive?.WebhookUrl ?? _config.Current.WebhookUrl;
+        var hash = HashWebhook(webhookUrl);
         var url = $"https://disbox-server.fly.dev/files/get/{hash}";
 
         progress?.Report("A ligar ao servidor Disbox...");

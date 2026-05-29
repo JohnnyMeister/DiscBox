@@ -6,5 +6,5 @@ C_DEFINES = -Ddiscbox_shared_EXPORTS
 
 C_INCLUDES = @CMakeFiles/discbox_shared.dir/includes_C.rsp
 
-C_FLAGS = -O3 -DNDEBUG -std=gnu11 -Wall -Wextra -Wpedantic
+C_FLAGS = -std=gnu11 -Wall -Wextra -Wpedantic
 

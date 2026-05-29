@@ -8,11 +8,12 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "C:/Users/jpmmm/Downloads/libdiscbox/src/chunk.c" "CMakeFiles/discbox_static.dir/src/chunk.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/chunk.c.obj.d"
-  "C:/Users/jpmmm/Downloads/libdiscbox/src/db.c" "CMakeFiles/discbox_static.dir/src/db.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/db.c.obj.d"
-  "C:/Users/jpmmm/Downloads/libdiscbox/src/discbox.c" "CMakeFiles/discbox_static.dir/src/discbox.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/discbox.c.obj.d"
-  "C:/Users/jpmmm/Downloads/libdiscbox/src/discord.c" "CMakeFiles/discbox_static.dir/src/discord.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/discord.c.obj.d"
-  "C:/Users/jpmmm/Downloads/libdiscbox/src/ratelimit.c" "CMakeFiles/discbox_static.dir/src/ratelimit.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/ratelimit.c.obj.d"
+  "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/chunk.c" "CMakeFiles/discbox_static.dir/src/chunk.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/chunk.c.obj.d"
+  "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/db.c" "CMakeFiles/discbox_static.dir/src/db.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/db.c.obj.d"
+  "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/discbox.c" "CMakeFiles/discbox_static.dir/src/discbox.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/discbox.c.obj.d"
+  "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/discbox_crypto.c" "CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj.d"
+  "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/discord.c" "CMakeFiles/discbox_static.dir/src/discord.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/discord.c.obj.d"
+  "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/ratelimit.c" "CMakeFiles/discbox_static.dir/src/ratelimit.c.obj" "gcc" "CMakeFiles/discbox_static.dir/src/ratelimit.c.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

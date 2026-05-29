@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/discbox_shared.dir/src/db.c.obj.d"
   "CMakeFiles/discbox_shared.dir/src/discbox.c.obj"
   "CMakeFiles/discbox_shared.dir/src/discbox.c.obj.d"
+  "CMakeFiles/discbox_shared.dir/src/discbox_crypto.c.obj"
+  "CMakeFiles/discbox_shared.dir/src/discbox_crypto.c.obj.d"
   "CMakeFiles/discbox_shared.dir/src/discord.c.obj"
   "CMakeFiles/discbox_shared.dir/src/discord.c.obj.d"
   "CMakeFiles/discbox_shared.dir/src/ratelimit.c.obj"

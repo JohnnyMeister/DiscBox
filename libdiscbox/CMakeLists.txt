@@ -11,6 +11,7 @@ option(DISCBOX_DEBUG          "Enable debug logging"    OFF)
 
 # ── Find dependencies ──────────────────────────────────────────
 find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 # ── Library sources ────────────────────────────────────────────
 set(DISCBOX_SOURCES
@@ -19,6 +20,7 @@ set(DISCBOX_SOURCES
     src/discord.c
     src/db.c
     src/ratelimit.c
+    src/discbox_crypto.c
 )
 
 # ── Build as shared + static ───────────────────────────────────
@@ -37,7 +39,7 @@ foreach(target discbox_shared discbox_static)
                 ${CMAKE_CURRENT_SOURCE_DIR}/src
     )
     target_link_libraries(${target}
-        PRIVATE CURL::libcurl sqlite3
+        PRIVATE CURL::libcurl OpenSSL::Crypto sqlite3
     )
     if(DISCBOX_DEBUG)
         target_compile_definitions(${target} PRIVATE DISCBOX_DEBUG=1)

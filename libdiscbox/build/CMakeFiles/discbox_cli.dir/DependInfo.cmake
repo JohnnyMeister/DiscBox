@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "C:/Users/jpmmm/Downloads/libdiscbox/examples/cli.c" "CMakeFiles/discbox_cli.dir/examples/cli.c.obj" "gcc" "CMakeFiles/discbox_cli.dir/examples/cli.c.obj.d"
+  "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/examples/cli.c" "CMakeFiles/discbox_cli.dir/examples/cli.c.obj" "gcc" "CMakeFiles/discbox_cli.dir/examples/cli.c.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

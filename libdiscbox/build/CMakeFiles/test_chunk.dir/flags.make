@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = @CMakeFiles/test_chunk.dir/includes_C.rsp
 
-C_FLAGS = -O3 -DNDEBUG -std=gnu11
+C_FLAGS = -std=gnu11
 

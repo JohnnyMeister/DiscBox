@@ -6,128 +6,231 @@
         x:Class="DiscBox.Views.SetupWindow"
         x:DataType="vm:SetupViewModel"
         Title="DiscBox — Setup"
-        Width="540" Height="600"
-        MinWidth="540" MinHeight="600"
+        Width="580" Height="720"
+        MinWidth="580" MinHeight="720"
         WindowStartupLocation="CenterScreen"
         CanResize="False"
-        Background="#0B0F19"
+        Background="#080C14"
         ExtendClientAreaToDecorationsHint="True">
 
-  <!-- Content with TitleBar spacing since ExtendClientArea is True -->
-  <Grid RowDefinitions="30,*">
-    
-    <!-- TitleBar background (custom) -->
-    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
-      <TextBlock Text="DiscBox — Setup" 
-                 Foreground="#8E9297" FontSize="12" 
+  <Window.Styles>
+    <!-- TextBox focus style -->
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+      <Setter Property="BorderBrush" Value="#7C3AED"/>
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="CaretBrush" Value="#00E5FF"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="32,*">
+
+    <!-- Custom TitleBar -->
+    <Border Grid.Row="0" Background="#080C14" IsHitTestVisible="False">
+      <TextBlock Text="DiscBox — Setup"
+                 Foreground="#4A5568" FontSize="11"
                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
 
+    <!-- Main Content -->
     <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto">
 
-      <!-- Header -->
-      <Border Grid.Row="0" Background="#0B0F19" Padding="0,32,0,24">
-        <StackPanel HorizontalAlignment="Center" Spacing="16">
-          <Image Source="avares://DiscBox/Assets/logo.png" Width="72" Height="72" HorizontalAlignment="Center"/>
-          <TextBlock Text="DiscBox" FontSize="32" FontWeight="Bold"
-                     Foreground="#00E5FF" HorizontalAlignment="Center"/>
-          <TextBlock Text="Your Discord as personal cloud storage"
-                     Foreground="#8E9297" FontSize="14"
-                     HorizontalAlignment="Center"/>
+      <!-- ══ HEADER with gradient ══ -->
+      <Border Grid.Row="0" Padding="0,36,0,32">
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Color="#0D1220" Offset="0"/>
+            <GradientStop Color="#080C14" Offset="1"/>
+          </LinearGradientBrush>
+        </Border.Background>
+        <StackPanel HorizontalAlignment="Center" Spacing="12">
+          <!-- Logo glow effect using nested borders -->
+          <Border HorizontalAlignment="Center" Width="80" Height="80" CornerRadius="20">
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#1A0A3A" Offset="0"/>
+                <GradientStop Color="#0A1A3A" Offset="1"/>
+              </LinearGradientBrush>
+            </Border.Background>
+            <Border BorderBrush="#7C3AED" BorderThickness="1" CornerRadius="20">
+              <Image Source="avares://DiscBox/Assets/logo.png"
+                     Width="52" Height="52"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+          </Border>
+
+          <StackPanel Spacing="4">
+            <TextBlock Text="DiscBox" FontSize="34" FontWeight="Black"
+                       HorizontalAlignment="Center">
+              <TextBlock.Foreground>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                  <GradientStop Color="#00E5FF" Offset="0"/>
+                  <GradientStop Color="#7C3AED" Offset="1"/>
+                </LinearGradientBrush>
+              </TextBlock.Foreground>
+            </TextBlock>
+            <TextBlock Text="Your Discord as personal cloud storage"
+                       Foreground="#6B7280" FontSize="13"
+                       HorizontalAlignment="Center"/>
+          </StackPanel>
         </StackPanel>
       </Border>
 
-      <!-- Form -->
-      <ScrollViewer Grid.Row="1" Padding="40,16">
-        <StackPanel Spacing="24">
+      <!-- ══ FORM ══ -->
+      <ScrollViewer Grid.Row="1" Padding="44,0">
+        <StackPanel Spacing="20">
 
-          <!-- Step 1: Webhook -->
-          <StackPanel Spacing="8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <material:MaterialIcon Kind="Webhook" Foreground="#6A0DAD" Width="20" Height="20"/>
-              <TextBlock Text="1. Discord Webhook URL" FontWeight="Bold"
-                         Foreground="#E3E5E8" FontSize="14"/>
-            </StackPanel>
-            <TextBlock FontSize="12" Foreground="#8E9297" TextWrapping="Wrap" Margin="28,0,0,8">
-              In your Discord server, go to a channel → Edit → Integrations → Webhooks → New Webhook → Copy URL.
-            </TextBlock>
-            <TextBox Watermark="https://discord.com/api/webhooks/..."
-                     Text="{Binding WebhookUrl}"
-                     FontFamily="Cascadia Code,Consolas,monospace"
-                     FontSize="13"
-                     Background="#161B29"
-                     Foreground="#00E5FF"
-                     BorderBrush="#2A324A"
-                     BorderThickness="1"
-                     CornerRadius="8"
-                     Padding="16,12"/>
-          </StackPanel>
+          <!-- ── Step 1: Webhook URL ── -->
+          <Border Background="#0D1220" BorderBrush="#1E2D45" BorderThickness="1"
+                  CornerRadius="12" Padding="24,20">
+            <StackPanel Spacing="12">
 
-          <!-- Step 2: Drive name -->
-          <StackPanel Spacing="8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <material:MaterialIcon Kind="Harddisk" Foreground="#6A0DAD" Width="20" Height="20"/>
-              <TextBlock Text="2. Drive Name" FontWeight="Bold"
-                         Foreground="#E3E5E8" FontSize="14"/>
-            </StackPanel>
-            <TextBox Watermark="My DiscBox"
-                     Text="{Binding DriveName}"
-                     Background="#161B29"
-                     Foreground="#E3E5E8"
-                     BorderBrush="#2A324A"
-                     BorderThickness="1"
-                     CornerRadius="8"
-                     Padding="16,12"
-                     FontSize="14"/>
-          </StackPanel>
+              <!-- Step label -->
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Width="26" Height="26" CornerRadius="13" Background="#7C3AED">
+                  <TextBlock Text="1" Foreground="White" FontSize="12" FontWeight="Bold"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="Discord Webhook URL" FontWeight="Bold"
+                           Foreground="#E2E8F0" FontSize="14" VerticalAlignment="Center"/>
+              </StackPanel>
 
-          <!-- Step 3: Encryption -->
-          <Border Background="#161B29" BorderBrush="#2A324A" BorderThickness="1"
-                  CornerRadius="8" Padding="20">
-            <StackPanel Spacing="8">
-              <CheckBox IsChecked="{Binding Encrypt}" Foreground="#E3E5E8" FontWeight="SemiBold">
+              <!-- Help text -->
+              <Border Background="#060A10" CornerRadius="8" Padding="12,10">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                  <material:MaterialIcon Kind="ShieldLock" Foreground="#00E5FF" Width="18" Height="18"/>
-                  <TextBlock Text="Encrypt files (AES-256-GCM)" VerticalAlignment="Center"/>
+                  <material:MaterialIcon Kind="InformationOutline" Foreground="#4A90D9"
+                                         Width="16" Height="16" VerticalAlignment="Top"
+                                         Margin="0,1,0,0"/>
+                  <TextBlock FontSize="12" Foreground="#6B7280" TextWrapping="Wrap"
+                             MaxWidth="420">
+                    In your Discord server → channel settings → Integrations → Webhooks → New Webhook → Copy URL.
+                  </TextBlock>
                 </StackPanel>
-              </CheckBox>
-              <TextBlock FontSize="12" Foreground="#8E9297" TextWrapping="Wrap"
-                         Margin="28,0,0,0">
-                Encrypts each chunk before uploading. Files are unreadable without
-                your webhook URL. Cannot be changed after upload.
-              </TextBlock>
+              </Border>
+
+              <!-- Webhook input -->
+              <TextBox Watermark="https://discord.com/api/webhooks/..."
+                       Text="{Binding WebhookUrl}"
+                       FontFamily="Cascadia Code,Consolas,monospace"
+                       FontSize="12"
+                       Background="#060A10"
+                       Foreground="#00E5FF"
+                       BorderBrush="#1E2D45"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="14,11"/>
             </StackPanel>
           </Border>
 
-          <!-- Status message -->
+          <!-- ── Step 2: Drive Name ── -->
+          <Border Background="#0D1220" BorderBrush="#1E2D45" BorderThickness="1"
+                  CornerRadius="12" Padding="24,20">
+            <StackPanel Spacing="12">
+
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Width="26" Height="26" CornerRadius="13" Background="#7C3AED">
+                  <TextBlock Text="2" Foreground="White" FontSize="12" FontWeight="Bold"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="Drive Name" FontWeight="Bold"
+                           Foreground="#E2E8F0" FontSize="14" VerticalAlignment="Center"/>
+              </StackPanel>
+
+              <TextBox Watermark="My DiscBox"
+                       Text="{Binding DriveName}"
+                       Background="#060A10"
+                       Foreground="#E2E8F0"
+                       BorderBrush="#1E2D45"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="14,11"
+                       FontSize="14"/>
+            </StackPanel>
+          </Border>
+
+          <!-- ── Step 3: Encryption ── -->
+          <Border Background="#0D1220" BorderBrush="#1E2D45" BorderThickness="1"
+                  CornerRadius="12" Padding="24,20">
+            <StackPanel Spacing="12">
+
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Width="26" Height="26" CornerRadius="13" Background="#7C3AED">
+                  <TextBlock Text="3" Foreground="White" FontSize="12" FontWeight="Bold"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="Security" FontWeight="Bold"
+                           Foreground="#E2E8F0" FontSize="14" VerticalAlignment="Center"/>
+              </StackPanel>
+
+              <Border Background="#060A10" CornerRadius="8" Padding="16,14"
+                      BorderBrush="#1E2D45" BorderThickness="1">
+                <StackPanel Spacing="10">
+                  <CheckBox IsChecked="{Binding Encrypt}" Foreground="#E2E8F0"
+                            FontWeight="SemiBold" FontSize="13">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <material:MaterialIcon Kind="ShieldLockOutline" Foreground="#00E5FF"
+                                            Width="18" Height="18" VerticalAlignment="Center"/>
+                      <TextBlock Text="Encrypt files (AES-256-GCM)" VerticalAlignment="Center"/>
+                    </StackPanel>
+                  </CheckBox>
+                  <TextBlock FontSize="12" Foreground="#6B7280" TextWrapping="Wrap"
+                             Margin="28,0,0,0" MaxWidth="430">
+                    Encrypts each chunk before uploading. Files are completely unreadable without
+                    your webhook URL. This setting cannot be changed after files are uploaded.
+                  </TextBlock>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <!-- ── Status / Error Message ── -->
           <Border IsVisible="{Binding StatusMessage, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
-                  Background="#331A1A" BorderBrush="#FF4B4B" BorderThickness="1"
-                  CornerRadius="8" Padding="16,12">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <material:MaterialIcon Kind="AlertCircleOutline" Foreground="#FF4B4B" Width="20" Height="20"/>
+                  CornerRadius="10" Padding="16,12">
+            <Border.Background>
+              <SolidColorBrush Color="#1A0A0A"/>
+            </Border.Background>
+            <Border.BorderBrush>
+              <SolidColorBrush Color="#7F1D1D"/>
+            </Border.BorderBrush>
+            <Border.BorderThickness>1</Border.BorderThickness>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <material:MaterialIcon Kind="AlertCircleOutline" Foreground="#F87171"
+                                     Width="20" Height="20" VerticalAlignment="Center"/>
               <TextBlock Text="{Binding StatusMessage}"
-                         Foreground="#FF4B4B"
+                         Foreground="#FCA5A5"
                          FontSize="13" TextWrapping="Wrap" VerticalAlignment="Center"/>
             </StackPanel>
           </Border>
 
+          <!-- Bottom padding -->
+          <Border Height="8"/>
+
         </StackPanel>
       </ScrollViewer>
 
-      <!-- Footer buttons -->
-      <Border Grid.Row="2" Background="#161B29" Padding="40,24" BorderBrush="#2A324A" BorderThickness="0,1,0,0">
+      <!-- ══ FOOTER ══ -->
+      <Border Grid.Row="2" Padding="44,20,44,28"
+              BorderBrush="#1E2D45" BorderThickness="0,1,0,0">
+        <Border.Background>
+          <SolidColorBrush Color="#0A0E18"/>
+        </Border.Background>
         <Button Command="{Binding SaveCommand}"
                 IsEnabled="{Binding !IsValidating}"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Height="48"
+                Height="52"
                 FontSize="15"
                 FontWeight="Bold"
-                Background="#6A0DAD"
                 Foreground="White"
-                CornerRadius="8">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <material:MaterialIcon Kind="CheckCircleOutline" Width="22" Height="22"/>
+                CornerRadius="10">
+          <Button.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+              <GradientStop Color="#5B21B6" Offset="0"/>
+              <GradientStop Color="#7C3AED" Offset="1"/>
+            </LinearGradientBrush>
+          </Button.Background>
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <material:MaterialIcon Kind="CheckCircleOutline" Width="22" Height="22" VerticalAlignment="Center"/>
             <TextBlock Text="Connect to Discord" VerticalAlignment="Center"/>
           </StackPanel>
         </Button>

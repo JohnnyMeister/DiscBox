@@ -32,7 +32,7 @@ class Program
             if (request is null)
                 return 2;
 
-            using var discbox = new DiscboxService(request.WebhookUrl, request.DbPath);
+            using var discbox = new DiscboxService(request.WebhookUrl, request.DbPath, request.Encrypt);
             var ok = discbox.IsAvailable && discbox.Delete(
                 request.VirtualPath,
                 (currentPath, done, total, chunkIndex, chunkCount) =>

@@ -1,6 +1,6 @@
 CMakeFiles/discbox_static.dir/src/db.c.obj: \
- C:\Users\jpmmm\Downloads\libdiscbox\src\db.c \
- C:\Users\jpmmm\Downloads\libdiscbox\src\db.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\db.c \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\db.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdint.h \
  C:/msys64/mingw64/include/stdint.h C:/msys64/mingw64/include/crtdefs.h \
  C:/msys64/mingw64/include/corecrt.h C:/msys64/mingw64/include/_mingw.h \
@@ -14,7 +14,7 @@ CMakeFiles/discbox_static.dir/src/db.c.obj: \
  C:/msys64/mingw64/include/_timeval.h \
  C:/msys64/mingw64/include/pthread_time.h \
  C:/msys64/mingw64/include/pthread_compat.h \
- C:/Users/jpmmm/Downloads/libdiscbox/vendor/sqlite3.h \
+ C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/vendor/sqlite3.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdarg.h \
  C:/msys64/mingw64/include/stdarg.h \
  C:/msys64/mingw64/include/_mingw_stdarg.h \

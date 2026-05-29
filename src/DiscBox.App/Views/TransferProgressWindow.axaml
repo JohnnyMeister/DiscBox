@@ -1,0 +1,82 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DiscBox.ViewModels"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        x:Class="DiscBox.Views.TransferProgressWindow"
+        x:DataType="vm:TransferProgressViewModel"
+        Title="DiscBox - Transferencia"
+        Width="500" Height="290"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B0F19"
+        ExtendClientAreaToDecorationsHint="True">
+
+  <Grid RowDefinitions="30,*">
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="{Binding TitleText}"
+                 Foreground="#8E9297" FontSize="12"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+
+    <Border Grid.Row="1" Background="#161B29" CornerRadius="0" Padding="32">
+      <StackPanel Spacing="16">
+
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <Panel Width="28" Height="28">
+            <material:MaterialIcon Kind="ContentCopy"
+                                   Foreground="#00E5FF"
+                                   Width="28" Height="28"
+                                   IsVisible="{Binding !IsCut}"/>
+            <material:MaterialIcon Kind="ContentCut"
+                                   Foreground="#00E5FF"
+                                   Width="28" Height="28"
+                                   IsVisible="{Binding IsCut}"/>
+          </Panel>
+          <TextBlock Text="{Binding ItemName}"
+                     Foreground="#E3E5E8" FontSize="15" FontWeight="Bold"
+                     TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <ProgressBar IsIndeterminate="{Binding IsIndeterminate}"
+                     Value="{Binding Percent}"
+                     Minimum="0" Maximum="100"
+                     Height="10" CornerRadius="5"
+                     Foreground="#00E5FF" Background="#2A324A" Margin="0,8,0,0"/>
+
+        <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+          <TextBlock Grid.Column="0"
+                     Text="{Binding StatusText}"
+                     Foreground="#8E9297" FontSize="13"
+                     TextTrimming="CharacterEllipsis"/>
+          <TextBlock Grid.Column="1"
+                     Text="{Binding Percent, StringFormat='{}{0}%'}"
+                     Foreground="#00E5FF" FontSize="13" FontWeight="Bold"/>
+        </Grid>
+
+        <TextBlock Text="{Binding DetailText}"
+                   Foreground="#687086" FontSize="12"
+                   TextTrimming="CharacterEllipsis"/>
+
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+            <material:MaterialIcon Kind="ClockOutline" Foreground="#8E9297" Width="14" Height="14"/>
+            <TextBlock Text="{Binding EtaText}" Foreground="#8E9297" FontSize="12"/>
+          </StackPanel>
+
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <material:MaterialIcon Kind="Speedometer" Foreground="#00E5FF" Width="14" Height="14"/>
+            <TextBlock Text="{Binding SpeedText}" Foreground="#00E5FF" FontSize="12" FontWeight="Bold"/>
+          </StackPanel>
+        </Grid>
+
+        <Button Content="Cancelar"
+                Command="{Binding CancelCommand}"
+                IsEnabled="{Binding !IsDone}"
+                HorizontalAlignment="Right"
+                Background="#2A324A" Foreground="#E3E5E8"
+                CornerRadius="8" Padding="20,8" FontWeight="SemiBold" Margin="0,8,0,0"/>
+
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

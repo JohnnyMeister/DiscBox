@@ -6,6 +6,8 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
@@ -18,8 +20,12 @@ namespace DiscBox.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly ConfigService _config;
-    private readonly DiscboxService? _discbox;
+    private DiscboxService? _discbox;
+    private ConfigService.DriveConfig? _activeDrive;
     private static readonly TimeSpan DeleteTimeout = TimeSpan.FromHours(6);
+    private readonly HashSet<FileEntry> _uiSelectedEntries = [];
+    private bool _suppressSearchRefresh;
+    private int _searchRevision;
 
     private static IStorageProvider? StorageProvider =>
         (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
@@ -31,33 +37,167 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _isLoading = false;
     [ObservableProperty] private string _statusText = "Ready";
     [ObservableProperty] private string _driveName = "My DiscBox";
+    [ObservableProperty] private string _searchText = string.Empty;
 
     // Clipboard interno
-    [ObservableProperty] private FileEntry? _clipboardEntry;
     [ObservableProperty] private bool _clipboardIsCut = false;
-    public bool HasClipboard => ClipboardEntry is not null;
+    public ObservableCollection<FileEntry> ClipboardEntries { get; } = [];
+    public ObservableCollection<FileEntry> SelectedEntries { get; } = [];
+    public bool HasClipboard => ClipboardEntries.Count > 0;
+    public bool HasSelection => SelectedEntries.Count > 0 || SelectedEntry is not null;
 
     // BreadcrumbItem instead of tuple — tuples don't work with compiled Avalonia bindings
     public ObservableCollection<BreadcrumbItem> Breadcrumbs { get; } = [];
+
+    public ObservableCollection<ConfigService.DriveConfig> Drives { get; } = [];
 
     public ObservableCollection<ConfigService.QuickAccessFolder> QuickAccessFolders { get; } = [];
 
     public MainViewModel(ConfigService config)
     {
-        _config   = config;
-        DriveName = config.Current.DriveName;
-        foreach (var folder in config.Current.QuickAccessFolders)
-        {
-            QuickAccessFolders.Add(folder);
-        }
-        _discbox = new DiscboxService(config.Current.WebhookUrl, config.Current.DbPath);
+        _config = config;
+        RefreshDriveList();
+        RefreshQuickAccess();
+        ActivateDrive(config.Current.ActiveDrive, save: false);
         _ = NavigateToAsync("/");
 
+    }
+
+    private void RefreshDriveList()
+    {
+        Drives.Clear();
+        foreach (var drive in _config.Current.Drives)
+            Drives.Add(drive);
+    }
+
+    private void RefreshQuickAccess()
+    {
+        QuickAccessFolders.Clear();
+        foreach (var folder in _config.Current.QuickAccessFolders)
+            QuickAccessFolders.Add(folder);
+    }
+
+    public void SetSelectedEntries(IEnumerable<FileEntry> entries)
+    {
+        foreach (var previous in _uiSelectedEntries)
+            previous.IsUiSelected = false;
+        _uiSelectedEntries.Clear();
+
+        var selected = entries
+            .Where(e => e is not null)
+            .GroupBy(e => e.VirtualPath, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToArray();
+
+        SelectedEntries.Clear();
+        foreach (var entry in selected)
+        {
+            entry.IsUiSelected = true;
+            _uiSelectedEntries.Add(entry);
+            SelectedEntries.Add(entry);
+        }
+
+        SelectedEntry = SelectedEntries.LastOrDefault();
+        OnPropertyChanged(nameof(HasSelection));
+    }
+
+    private void ClearSelectedEntries()
+    {
+        foreach (var previous in _uiSelectedEntries)
+            previous.IsUiSelected = false;
+        _uiSelectedEntries.Clear();
+
+        SelectedEntries.Clear();
+        SelectedEntry = null;
+        OnPropertyChanged(nameof(HasSelection));
+    }
+
+    private IReadOnlyList<FileEntry> GetTargetEntries(FileEntry? entry)
+    {
+        if (SelectedEntries.Count > 0 &&
+            (entry is null || SelectedEntries.Any(e =>
+                string.Equals(e.VirtualPath, entry.VirtualPath, StringComparison.OrdinalIgnoreCase))))
+        {
+            return SelectedEntries.ToArray();
+        }
+
+        if (entry is not null)
+            return [entry];
+
+        return SelectedEntry is not null ? [SelectedEntry] : [];
+    }
+
+    private void SetClipboard(IEnumerable<FileEntry> entries, bool isCut)
+    {
+        ClipboardEntries.Clear();
+        foreach (var entry in entries)
+            ClipboardEntries.Add(entry);
+
+        ClipboardIsCut = isCut;
+        OnPropertyChanged(nameof(HasClipboard));
+    }
+
+    private void ClearClipboard()
+    {
+        ClipboardEntries.Clear();
+        ClipboardIsCut = false;
+        OnPropertyChanged(nameof(HasClipboard));
+    }
+
+    private void ClearSearchForNavigation()
+    {
+        if (string.IsNullOrEmpty(SearchText))
+            return;
+
+        _suppressSearchRefresh = true;
+        SearchText = string.Empty;
+        _suppressSearchRefresh = false;
+        Interlocked.Increment(ref _searchRevision);
+    }
+
+    partial void OnSearchTextChanged(string value)
+    {
+        if (_suppressSearchRefresh)
+            return;
+
+        var revision = Interlocked.Increment(ref _searchRevision);
+        _ = ApplySearchAsync(value, revision);
+    }
+
+    private void ActivateDrive(ConfigService.DriveConfig? drive, bool save, bool forceReconnect = false)
+    {
+        if (drive is null)
+        {
+            _activeDrive = null;
+            DriveName = "DiscBox";
+            _discbox?.Dispose();
+            _discbox = null;
+            return;
+        }
+
+        if (!forceReconnect && _activeDrive?.Id == drive.Id && _discbox?.IsAvailable == true)
+            return;
+
+        var currentPath = _activeDrive?.Id == drive.Id ? CurrentPath : "/";
+        _discbox?.Dispose();
+        _activeDrive = drive;
+        DriveName = drive.Name;
+        CurrentPath = currentPath;
+        ClearSearchForNavigation();
+        ClearSelectedEntries();
+        ClearClipboard();
+
+        _config.Current.ActiveDriveId = drive.Id;
+        if (save)
+            _config.Save();
+
+        _discbox = new DiscboxService(drive.WebhookUrl, drive.DbPath, drive.Encrypt);
     }
 
     [RelayCommand]
     public async Task NavigateToAsync(string path)
     {
+        ClearSearchForNavigation();
         IsLoading   = true;
         CurrentPath = path;
         StatusText  = $"Loading {path}…";
@@ -65,14 +205,79 @@ public partial class MainViewModel : ObservableObject
         {
             var items = await Task.Run(() =>
                 _discbox?.IsAvailable == true
-                ? _discbox.List(path).ToArray()
+                ? ListAndRepairPathConsistency(path)
                 : Array.Empty<FileEntry>());
             Entries = new ObservableCollection<FileEntry>(items);
+            ClearSelectedEntries();
             UpdateBreadcrumbs(path);
             StatusText = $"{Entries.Count} item(s)";
         }
         catch (Exception ex) { StatusText = $"Error: {ex.Message}"; }
         finally { IsLoading = false; }
+    }
+
+    private FileEntry[] ListAndRepairPathConsistency(string path)
+    {
+        if (_discbox is null)
+            return [];
+
+        var items = _discbox.List(path).ToArray();
+        var repaired = false;
+
+        foreach (var item in items)
+        {
+            var expectedPath = CombineVirtualPath(path, item.Name);
+            if (string.Equals(item.VirtualPath, expectedPath, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (_discbox.Rename(item.VirtualPath, expectedPath))
+                repaired = true;
+        }
+
+        return repaired ? _discbox.List(path).ToArray() : items;
+    }
+
+    private async Task ApplySearchAsync(string value, int revision)
+    {
+        var query = value.Trim();
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            await NavigateToAsync(CurrentPath);
+            return;
+        }
+
+        IsLoading = true;
+        StatusText = $"A pesquisar \"{query}\"...";
+
+        try
+        {
+            var items = await Task.Run(() =>
+                _discbox?.IsAvailable == true
+                    ? CollectEntriesRecursive("/")
+                        .Where(e =>
+                            e.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+                            e.VirtualPath.Contains(query, StringComparison.CurrentCultureIgnoreCase))
+                        .ToArray()
+                    : Array.Empty<FileEntry>());
+
+            if (revision != _searchRevision)
+                return;
+
+            Entries = new ObservableCollection<FileEntry>(items);
+            ClearSelectedEntries();
+            UpdateBreadcrumbs(CurrentPath);
+            StatusText = $"{Entries.Count} resultado(s) para \"{query}\"";
+        }
+        catch (Exception ex)
+        {
+            if (revision == _searchRevision)
+                StatusText = $"Erro na pesquisa: {ex.Message}";
+        }
+        finally
+        {
+            if (revision == _searchRevision)
+                IsLoading = false;
+        }
     }
 
     [RelayCommand]
@@ -259,6 +464,22 @@ public partial class MainViewModel : ObservableObject
         return result;
     }
 
+    private List<FileEntry> CollectEntriesRecursive(string virtualPath)
+    {
+        var result = new List<FileEntry>();
+        if (_discbox is null) return result;
+
+        var entries = _discbox.List(virtualPath);
+        foreach (var entry in entries)
+        {
+            result.Add(entry);
+            if (entry.IsFolder)
+                result.AddRange(CollectEntriesRecursive(entry.VirtualPath));
+        }
+
+        return result;
+    }
+
     [RelayCommand]
     private async Task GoUpAsync()
     {
@@ -267,7 +488,114 @@ public partial class MainViewModel : ObservableObject
         await NavigateToAsync(string.IsNullOrEmpty(parent) ? "/" : parent);
     }
 
-    [RelayCommand] private async Task RefreshAsync() => await NavigateToAsync(CurrentPath);
+    [RelayCommand]
+    private async Task RefreshAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var revision = Interlocked.Increment(ref _searchRevision);
+            await ApplySearchAsync(SearchText, revision);
+            return;
+        }
+
+        await NavigateToAsync(CurrentPath);
+    }
+
+    [RelayCommand]
+    private async Task SwitchDriveAsync(ConfigService.DriveConfig? drive)
+    {
+        if (drive is null) return;
+        ActivateDrive(drive, save: true);
+        await NavigateToAsync("/");
+    }
+
+    [RelayCommand]
+    private async Task AddDriveAsync()
+    {
+        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+
+        var dialog = new Views.DriveDialog();
+        var result = await dialog.ShowDialog<Views.DriveDialogResult?>(mainWindow!);
+        if (result is null) return;
+
+        if (_config.Current.Drives.Any(d =>
+                string.Equals(d.WebhookUrl, result.WebhookUrl, StringComparison.OrdinalIgnoreCase)))
+        {
+            StatusText = "Esse webhook ja existe noutra drive.";
+            return;
+        }
+
+        StatusText = "A validar webhook...";
+        var valid = await ValidateWebhookAsync(result.WebhookUrl);
+        if (!valid)
+        {
+            StatusText = "Webhook invalido. Confirma o URL e tenta outra vez.";
+            return;
+        }
+
+        var drive = ConfigService.CreateDrive(result.Name, result.WebhookUrl, result.Encrypt);
+        _config.Current.Drives.Add(drive);
+        _config.Current.ActiveDriveId = drive.Id;
+        _config.Save();
+
+        RefreshDriveList();
+        ActivateDrive(drive, save: false);
+        await NavigateToAsync("/");
+        StatusText = $"Drive '{drive.Name}' adicionada.";
+    }
+
+    [RelayCommand]
+    private async Task RenameDriveAsync(ConfigService.DriveConfig? drive)
+    {
+        if (drive is null) return;
+
+        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+
+        var dialog = new Views.RenameDialog(drive.Name);
+        var newName = await dialog.ShowDialog<string?>(mainWindow!);
+        if (string.IsNullOrWhiteSpace(newName) || newName.Trim() == drive.Name) return;
+
+        var configDrive = _config.Current.Drives.FirstOrDefault(d => d.Id == drive.Id);
+        if (configDrive is null) return;
+
+        configDrive.Name = newName.Trim();
+        _config.Save();
+        RefreshDriveList();
+
+        if (_activeDrive?.Id == configDrive.Id)
+        {
+            _activeDrive = configDrive;
+            DriveName = configDrive.Name;
+        }
+
+        StatusText = $"Drive renomeada para '{configDrive.Name}'.";
+    }
+
+    [RelayCommand]
+    private void ToggleDriveEncryption(ConfigService.DriveConfig? drive)
+    {
+        if (drive is null) return;
+
+        var configDrive = _config.Current.Drives.FirstOrDefault(d => d.Id == drive.Id);
+        if (configDrive is null) return;
+
+        configDrive.Encrypt = !configDrive.Encrypt;
+        _config.Save();
+        RefreshDriveList();
+
+        if (_activeDrive?.Id == configDrive.Id)
+        {
+            ActivateDrive(configDrive, save: false, forceReconnect: true);
+        }
+
+        StatusText = configDrive.Encrypt
+            ? $"Encriptação ativa para novos uploads em '{configDrive.Name}'."
+            : $"Encriptação desligada para novos uploads em '{configDrive.Name}'.";
+    }
 
     [RelayCommand]
     private async Task NewFolderAsync()
@@ -291,6 +619,8 @@ public partial class MainViewModel : ObservableObject
             StatusText = $"✗ Erro ao criar pasta: {_discbox?.LastError()}";
 
         await RefreshAsync();
+        if (ok)
+            await BackupActiveDriveAsync($"Pasta '{result}' criada.");
     }
 
     [RelayCommand]
@@ -308,6 +638,7 @@ public partial class MainViewModel : ObservableObject
             as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
             ?.MainWindow;
 
+        var uploadedAny = false;
         foreach (var file in files)
         {
             var localPath = file.TryGetLocalPath();
@@ -339,6 +670,7 @@ public partial class MainViewModel : ObservableObject
 
             if (ok)
             {
+                uploadedAny = true;
                 progressVm.Complete(file.Name);
                 StatusText = $"✓ {file.Name} enviado!";
             }
@@ -353,12 +685,22 @@ public partial class MainViewModel : ObservableObject
         }
 
         await RefreshAsync();
+        if (uploadedAny)
+            await BackupActiveDriveAsync("Upload concluido.");
     }
 
     [RelayCommand]
     private async Task DeleteEntryAsync(FileEntry? entry)
     {
-        if (entry is null) return;
+        var entries = GetTargetEntries(entry);
+        if (entries.Count == 0) return;
+        if (entries.Count > 1)
+        {
+            await DeleteEntriesAsync(entries);
+            return;
+        }
+
+        entry = entries[0];
 
         try
         {
@@ -366,7 +708,10 @@ public partial class MainViewModel : ObservableObject
                 as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
                 ?.MainWindow;
 
-            var dialog = new Views.ConfirmDeleteDialog(entry.Name, entry.IsFolder);
+            var dialog = new Views.ConfirmDeleteDialog(
+                entries.Count == 1 ? entries[0].Name : $"{entries.Count} itens selecionados",
+                entries.Count != 1 || entries[0].IsFolder,
+                entries.Count);
             var confirmed = await dialog.ShowDialog<bool>(mainWindow!);
 
             if (!confirmed) return;
@@ -374,7 +719,7 @@ public partial class MainViewModel : ObservableObject
             var progressVm = new DeleteProgressViewModel();
             var cancelRequested = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             progressVm.CancelRequested += () => cancelRequested.TrySetResult(true);
-            progressVm.Start(entry.Name);
+            progressVm.Start(entries.Count == 1 ? entries[0].Name : $"{entries.Count} itens");
             var progressWindow = new Views.DeleteProgressWindow { DataContext = progressVm };
             progressWindow.Show(mainWindow!);
 
@@ -399,6 +744,7 @@ public partial class MainViewModel : ObservableObject
                         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
                         {
                             await RefreshAsync();
+                            await BackupActiveDriveAsync($"'{entry.Name}' apagado.");
                         });
                     }
                     else if (t.IsFaulted)
@@ -421,6 +767,7 @@ public partial class MainViewModel : ObservableObject
                         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
                         {
                             await RefreshAsync();
+                            await BackupActiveDriveAsync($"'{entry.Name}' apagado.");
                         });
                     }
                 }, TaskScheduler.Default);
@@ -455,10 +802,138 @@ public partial class MainViewModel : ObservableObject
             await Task.Delay(2000);
             progressWindow.Close();
             await RefreshAsync();
+            if (ok)
+                await BackupActiveDriveAsync($"'{entry.Name}' apagado.");
         }
         catch (Exception ex)
         {
             StatusText = $"✗ Erro (Delete): {ex.Message}";
+        }
+    }
+
+    private async Task DeleteEntriesAsync(IReadOnlyList<FileEntry> entries)
+    {
+        try
+        {
+            var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+                as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+                ?.MainWindow;
+
+            var dialog = new Views.ConfirmDeleteDialog(
+                $"{entries.Count} itens selecionados",
+                isFolder: true,
+                itemCount: entries.Count);
+            var confirmed = await dialog.ShowDialog<bool>(mainWindow!);
+
+            if (!confirmed) return;
+
+            var progressVm = new DeleteProgressViewModel();
+            var cancelRequested = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            progressVm.CancelRequested += () => cancelRequested.TrySetResult(true);
+            progressVm.Start($"{entries.Count} itens");
+            var progressWindow = new Views.DeleteProgressWindow { DataContext = progressVm };
+            progressWindow.Show(mainWindow!);
+
+            var deleted = 0;
+            var failed = 0;
+            string? erro = null;
+
+            for (var i = 0; i < entries.Count; i++)
+            {
+                var current = entries[i];
+                progressVm.FileName = $"[{i + 1}/{entries.Count}] {current.Name}";
+                StatusText = $"A apagar {current.Name}...";
+
+                var deleteTask = DeleteOnDedicatedThreadAsync(
+                    current.VirtualPath,
+                    progress => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        progressVm.Update(progress.Done, progress.Total, progress.CurrentPath)));
+                var timeoutTask = Task.Delay(DeleteTimeout);
+                var finishedTask = await Task.WhenAny(deleteTask, cancelRequested.Task, timeoutTask);
+
+                if (finishedTask == cancelRequested.Task)
+                {
+                    StatusText = "Cancelado";
+                    progressWindow.Close();
+                    _ = deleteTask.ContinueWith(async t =>
+                    {
+                        if (!t.IsFaulted && t.Result.Ok)
+                        {
+                            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                            {
+                                await RefreshAsync();
+                                await BackupActiveDriveAsync($"'{current.Name}' apagado.");
+                            });
+                        }
+                        else if (t.IsFaulted)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[Delete] background error: {t.Exception}");
+                        }
+                    }, TaskScheduler.Default);
+                    return;
+                }
+
+                if (finishedTask == timeoutTask)
+                {
+                    erro = $"timeout apos {(int)DeleteTimeout.TotalHours}h";
+                    progressVm.Error(erro);
+                    StatusText = $"Erro ao apagar: {erro}";
+                    _ = deleteTask.ContinueWith(async t =>
+                    {
+                        if (!t.IsFaulted && t.Result.Ok)
+                        {
+                            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+                            {
+                                await RefreshAsync();
+                                await BackupActiveDriveAsync($"'{current.Name}' apagado.");
+                            });
+                        }
+                    }, TaskScheduler.Default);
+                    await Task.Delay(2500);
+                    progressWindow.Close();
+                    return;
+                }
+
+                try
+                {
+                    var result = await deleteTask;
+                    if (result.Ok)
+                    {
+                        deleted++;
+                    }
+                    else
+                    {
+                        failed++;
+                        erro = result.Error;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failed++;
+                    erro = ex.Message;
+                }
+            }
+
+            if (failed == 0)
+            {
+                progressVm.Complete($"{deleted} itens");
+                StatusText = $"{deleted} item(ns) apagado(s)!";
+            }
+            else
+            {
+                progressVm.Error(erro ?? "desconhecido");
+                StatusText = $"{deleted} OK, {failed} erro(s) ao apagar: {erro}";
+            }
+
+            await Task.Delay(2000);
+            progressWindow.Close();
+            await RefreshAsync();
+            if (deleted > 0)
+                await BackupActiveDriveAsync($"{deleted} itens apagados.");
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Erro (Delete): {ex.Message}";
         }
     }
 
@@ -469,10 +944,18 @@ public partial class MainViewModel : ObservableObject
         var tcs = new TaskCompletionSource<(bool Ok, string? Error)>(
             TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var webhookUrl = _config.Current.WebhookUrl;
-        var dbPath = string.IsNullOrWhiteSpace(_config.Current.DbPath)
+        var drive = _activeDrive ?? _config.Current.ActiveDrive;
+        if (drive is null)
+        {
+            tcs.TrySetResult((false, "nenhuma drive ativa"));
+            return tcs.Task;
+        }
+
+        var webhookUrl = drive.WebhookUrl;
+        var dbPath = string.IsNullOrWhiteSpace(drive.DbPath)
             ? ConfigService.DefaultDbPath
-            : _config.Current.DbPath;
+            : drive.DbPath;
+        var encrypt = drive.Encrypt;
 
         var worker = new Thread(() =>
         {
@@ -497,6 +980,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     WebhookUrl = webhookUrl,
                     DbPath = dbPath,
+                    Encrypt = encrypt,
                     VirtualPath = virtualPath,
                     ResultPath = resultPath,
                     ProgressPath = progressPath
@@ -615,72 +1099,530 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private static async Task<bool> ValidateWebhookAsync(string url)
+    {
+        if (!ConfigService.IsValidWebhookUrl(url))
+            return false;
+
+        try
+        {
+            using var http = new HttpClient();
+            http.Timeout = TimeSpan.FromSeconds(10);
+            var resp = await http.GetAsync(url);
+            return resp.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private async Task BackupActiveDriveAsync(string successText)
+    {
+        var drive = _activeDrive ?? _config.Current.ActiveDrive;
+        if (drive is null || _discbox is null || !_discbox.IsAvailable)
+            return;
+
+        try
+        {
+            StatusText = "A atualizar backup remoto da drive...";
+            var messageId = await DiscboxBackupService.UploadAsync(_discbox, drive);
+
+            var configDrive = _config.Current.Drives.FirstOrDefault(d => d.Id == drive.Id);
+            if (configDrive is not null)
+                configDrive.BackupMessageId = messageId;
+            drive.BackupMessageId = messageId;
+
+            _config.Save();
+            RefreshDriveList();
+            StatusText = $"{successText} Backup remoto atualizado.";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"{successText} Backup remoto falhou: {ex.Message}";
+        }
+    }
+
+    private async Task<bool> RestoreActiveDriveBackupAsync()
+    {
+        var drive = _activeDrive ?? _config.Current.ActiveDrive;
+        if (drive is null)
+            return false;
+
+        RemoteBackupDownload? backup = null;
+        try
+        {
+            backup = await DiscboxBackupService.TryDownloadAsync(drive);
+            if (backup is null)
+                return false;
+
+            _discbox?.Dispose();
+            _discbox = null;
+
+            var dbPath = string.IsNullOrWhiteSpace(drive.DbPath)
+                ? ConfigService.DbPathForDrive(drive.Id)
+                : drive.DbPath;
+            var dbDir = Path.GetDirectoryName(dbPath);
+            if (!string.IsNullOrWhiteSpace(dbDir))
+                Directory.CreateDirectory(dbDir);
+
+            TryDeleteFile(dbPath + "-wal");
+            TryDeleteFile(dbPath + "-shm");
+            File.Copy(backup.LocalPath, dbPath, overwrite: true);
+
+            drive.DbPath = dbPath;
+            drive.BackupMessageId = backup.MessageId;
+            var configDrive = _config.Current.Drives.FirstOrDefault(d => d.Id == drive.Id);
+            if (configDrive is not null)
+            {
+                configDrive.DbPath = dbPath;
+                configDrive.BackupMessageId = backup.MessageId;
+            }
+
+            _config.Save();
+            RefreshDriveList();
+            ActivateDrive(configDrive ?? drive, save: false, forceReconnect: true);
+            return true;
+        }
+        finally
+        {
+            if (backup is not null)
+                TryDeleteFile(backup.LocalPath);
+        }
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
+            // Best-effort cleanup only.
+        }
+    }
+
     [RelayCommand]
     private async Task MigrateFromDisboxAsync()
     {
-        StatusText = "A importar dados do Disbox...";
+        var restoredBackup = false;
+        try
+        {
+            StatusText = "A sincronizar backup DiscBox remoto...";
+            restoredBackup = await RestoreActiveDriveBackupAsync();
+            if (restoredBackup)
+            {
+                await RefreshAsync();
+                StatusText = "Backup DiscBox restaurado. A importar dados do Disbox...";
+            }
+            else
+            {
+                StatusText = "Sem backup DiscBox remoto. A importar dados do Disbox...";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Backup DiscBox falhou: {ex.Message}. A importar dados do Disbox...";
+        }
+
         var migration = new DisboxMigrationService(_config, _discbox!);
         var progress = new Progress<string>(msg => StatusText = msg);
 
         try
         {
             var (folders, files) = await migration.MigrateAsync(progress);
-            StatusText = $"✓ Migração completa: {folders} pastas, {files} ficheiros importados!";
+            StatusText = restoredBackup
+                ? $"✓ Sync completa: backup restaurado, {folders} pastas, {files} ficheiros Disbox importados!"
+                : $"✓ Migração completa: {folders} pastas, {files} ficheiros importados!";
         }
         catch (Exception ex)
         {
-            StatusText = $"✗ Erro na migração: {ex.Message}";
+            StatusText = restoredBackup
+                ? $"✓ Backup DiscBox restaurado. Disbox falhou: {ex.Message}"
+                : $"✗ Erro na migração: {ex.Message}";
         }
 
         await RefreshAsync();
+        await BackupActiveDriveAsync("Sincronizacao concluida.");
     }
 
     [RelayCommand]
     private void CutEntry(FileEntry? entry)
     {
-        if (entry is null) return;
-        ClipboardEntry = entry;
+        var entries = GetTargetEntries(entry);
+        if (entries.Count == 0) return;
+        SetClipboard(entries, isCut: true);
         ClipboardIsCut = true;
-        StatusText = $"✂ '{entry.Name}' cortado — navega para o destino e cola";
+        StatusText = entries.Count == 1
+            ? $"'{entries[0].Name}' cortado - navega para o destino e cola"
+            : $"{entries.Count} itens cortados - navega para o destino e cola";
     }
 
     [RelayCommand]
     private void CopyEntry(FileEntry? entry)
     {
-        if (entry is null) return;
-        ClipboardEntry = entry;
+        var entries = GetTargetEntries(entry);
+        if (entries.Count == 0) return;
+        SetClipboard(entries, isCut: false);
         ClipboardIsCut = false;
-        StatusText = $"📋 '{entry.Name}' copiado — navega para o destino e cola";
+        StatusText = entries.Count == 1
+            ? $"'{entries[0].Name}' copiado - navega para o destino e cola"
+            : $"{entries.Count} itens copiados - navega para o destino e cola";
     }
 
     [RelayCommand]
     private async Task PasteAsync()
     {
-        if (ClipboardEntry is null) return;
+        if (ClipboardEntries.Count == 0 || _discbox is null) return;
 
-        var destPath = CurrentPath.TrimEnd('/') + "/" + ClipboardEntry.Name;
+        var items = ClipboardEntries.ToArray();
+        var wasCut = ClipboardIsCut;
+        var movedOrCopied = 0;
+        var failed = 0;
+        var skippedSameDestination = 0;
+        string? lastError = null;
 
-        if (ClipboardIsCut)
+        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+        var progressVm = new TransferProgressViewModel();
+        var progressWindow = new Views.TransferProgressWindow { DataContext = progressVm };
+        progressVm.Start(
+            wasCut ? "A mover item(ns)..." : "A copiar item(ns)...",
+            CountTransferItems(items, wasCut),
+            wasCut);
+        progressWindow.Show(mainWindow!);
+
+        foreach (var item in items)
         {
-            bool ok = await Task.Run(() =>
-                _discbox?.Rename(ClipboardEntry.VirtualPath, destPath) ?? false);
-            StatusText = ok
-                ? $"✓ '{ClipboardEntry.Name}' movido!"
-                : $"✗ Erro ao mover: {_discbox?.LastError()}";
+            if (progressVm.Cancelled)
+                break;
+
+            var directDestPath = CombineVirtualPath(CurrentPath, item.Name);
+            if (wasCut && string.Equals(item.VirtualPath, directDestPath, StringComparison.OrdinalIgnoreCase))
+            {
+                skippedSameDestination++;
+                lastError = "destino igual a origem";
+                continue;
+            }
+
+            var destPath = GetAvailableDestinationPath(CurrentPath, item.Name);
+
+            if (item.IsFolder && IsSameOrChildPath(destPath, item.VirtualPath))
+            {
+                failed++;
+                lastError = "nao podes colar uma pasta dentro dela propria";
+                continue;
+            }
+
+            StatusText = wasCut
+                ? $"A mover {item.Name}..."
+                : $"A copiar {item.Name}...";
+
+            var ok = wasCut
+                ? await MoveEntryToAsync(item, destPath, progressVm)
+                : await CopyEntryToAsync(item, destPath, progressVm);
+
+            if (ok)
+            {
+                movedOrCopied++;
+            }
+            else
+            {
+                failed++;
+                lastError = _discbox.LastError();
+            }
+        }
+
+        if (wasCut && movedOrCopied > 0)
+            ClearClipboard();
+
+        await RefreshAsync();
+        var operationText = BuildPasteResultText(movedOrCopied, failed, skippedSameDestination, lastError);
+
+        if (movedOrCopied > 0)
+        {
+            progressVm.Complete(operationText);
+            await BackupActiveDriveAsync(operationText);
         }
         else
         {
-            // Para copiar, usa importFile com os dados que temos
-            bool ok = await Task.Run(() =>
-                _discbox?.ImportFile(destPath, ClipboardEntry.Name,
-                    ClipboardEntry.SizeBytes, "[]") ?? false);
-            StatusText = ok
-                ? $"✓ '{ClipboardEntry.Name}' colado!"
-                : $"✗ Erro ao colar: {_discbox?.LastError()}";
+            if (failed > 0)
+                progressVm.Error(operationText);
+            else
+                progressVm.Complete(operationText);
+            StatusText = operationText;
         }
 
-        if (ClipboardIsCut) ClipboardEntry = null;
-        await RefreshAsync();
+        await Task.Delay(progressVm.Cancelled ? 800 : 1500);
+        progressWindow.Close();
+    }
+
+    private async Task<bool> MoveEntryToAsync(
+        FileEntry entry,
+        string destPath,
+        TransferProgressViewModel progressVm)
+    {
+        if (_discbox is null || progressVm.Cancelled)
+            return false;
+
+        progressVm.StartItem(entry.Name);
+
+        var movePath = destPath;
+        for (var attempt = 0; attempt < 100; attempt++)
+        {
+            var moved = await Task.Run(() => _discbox.Rename(entry.VirtualPath, movePath));
+            if (moved)
+            {
+                progressVm.CompleteItem();
+                return true;
+            }
+
+            var error = _discbox.LastError();
+            if (!IsPathAlreadyExistsError(error))
+                return false;
+
+            movePath = MakeCopyPath(destPath, attempt + 2);
+        }
+
+        return false;
+    }
+
+    private async Task<bool> CopyEntryToAsync(
+        FileEntry entry,
+        string destPath,
+        TransferProgressViewModel progressVm)
+    {
+        if (_discbox is null || progressVm.Cancelled)
+            return false;
+
+        progressVm.StartItem(entry.Name);
+
+        if (entry.IsFolder)
+        {
+            var children = await Task.Run(() => _discbox.List(entry.VirtualPath).ToArray());
+            var finalDestPath = await CreateFolderWithRetriesAsync(destPath);
+            if (finalDestPath is null)
+                return false;
+
+            progressVm.CompleteItem();
+
+            foreach (var child in children)
+            {
+                if (progressVm.Cancelled)
+                    return true;
+
+                var childDest = GetAvailableDestinationPath(finalDestPath, child.Name);
+                var childCopied = await CopyEntryToAsync(child, childDest, progressVm);
+                if (!childCopied)
+                    return false;
+            }
+
+            return true;
+        }
+
+        var tempPath = Path.Combine(
+            Path.GetTempPath(),
+            $"discbox-copy-{Guid.NewGuid():N}-{SanitizeTempFileName(entry.Name)}");
+
+        try
+        {
+            var downloaded = await Task.Run(() =>
+                _discbox.Download(entry.VirtualPath, tempPath,
+                    (done, total, ci, cc) =>
+                    {
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                            progressVm.UpdateBytes(done, total, "A descarregar"));
+                    }));
+            if (!downloaded)
+                return false;
+
+            var uploadPath = destPath;
+            for (var attempt = 0; attempt < 100; attempt++)
+            {
+                var uploaded = await Task.Run(() =>
+                    _discbox.Upload(tempPath, uploadPath,
+                        (done, total, ci, cc) =>
+                        {
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                progressVm.UpdateBytes(done, total, "A enviar"));
+                        }));
+                if (uploaded)
+                {
+                    progressVm.CompleteItem();
+                    return true;
+                }
+
+                var error = _discbox.LastError();
+                if (!IsPathAlreadyExistsError(error))
+                    return false;
+
+                uploadPath = MakeCopyPath(destPath, attempt + 2);
+            }
+
+            return false;
+        }
+        finally
+        {
+            TryDeleteFile(tempPath);
+        }
+    }
+
+    private async Task<string?> CreateFolderWithRetriesAsync(string destPath)
+    {
+        if (_discbox is null)
+            return null;
+
+        var folderPath = destPath;
+        for (var attempt = 0; attempt < 100; attempt++)
+        {
+            var created = await Task.Run(() => _discbox.Mkdir(folderPath));
+            if (created)
+                return folderPath;
+
+            var error = _discbox.LastError();
+            if (!IsPathAlreadyExistsError(error))
+                return null;
+
+            folderPath = MakeCopyPath(destPath, attempt + 2);
+        }
+
+        return null;
+    }
+
+    private string BuildPasteResultText(
+        int changed,
+        int failed,
+        int skippedSameDestination,
+        string? lastError)
+    {
+        if (changed == 0 && failed == 0 && skippedSameDestination > 0)
+            return "Nada movido: escolhe uma pasta diferente da origem.";
+
+        if (changed == 0 && failed == 0)
+            return "Operacao cancelada.";
+
+        if (failed == 0 && skippedSameDestination == 0)
+            return $"{changed} item(ns) colado(s).";
+
+        var details = lastError;
+        if (skippedSameDestination > 0)
+            details = string.IsNullOrWhiteSpace(details)
+                ? $"{skippedSameDestination} item(ns) ja estavam nesse destino"
+                : $"{details}; {skippedSameDestination} item(ns) ja estavam nesse destino";
+
+        return $"{changed} OK, {failed} erro(s): {details}";
+    }
+
+    private int CountTransferItems(IReadOnlyList<FileEntry> items, bool isCut)
+    {
+        if (isCut)
+            return items.Count;
+
+        return items.Sum(CountCopyItems);
+    }
+
+    private int CountCopyItems(FileEntry entry)
+    {
+        if (_discbox is null || !entry.IsFolder)
+            return 1;
+
+        try
+        {
+            return 1 + _discbox.List(entry.VirtualPath).Sum(CountCopyItems);
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    private string GetAvailableDestinationPath(string folderPath, string name)
+    {
+        if (_discbox is null)
+            return CombineVirtualPath(folderPath, name);
+
+        var existingNames = _discbox.List(folderPath)
+            .Select(e => e.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!existingNames.Contains(name))
+            return CombineVirtualPath(folderPath, name);
+
+        var extension = Path.GetExtension(name);
+        var stem = string.IsNullOrEmpty(extension)
+            ? name
+            : name[..^extension.Length];
+
+        for (var i = 2; i < 10_000; i++)
+        {
+            var candidate = string.IsNullOrEmpty(extension)
+                ? $"{stem} - Copy {i}"
+                : $"{stem} - Copy {i}{extension}";
+            if (!existingNames.Contains(candidate))
+                return CombineVirtualPath(folderPath, candidate);
+        }
+
+        return CombineVirtualPath(folderPath, $"{name} - Copy {Guid.NewGuid():N}");
+    }
+
+    private static bool IsPathAlreadyExistsError(string? error) =>
+        !string.IsNullOrWhiteSpace(error) &&
+        error.Contains("path already exists", StringComparison.OrdinalIgnoreCase);
+
+    private static string MakeCopyPath(string virtualPath, int copyNumber)
+    {
+        var normalized = NormalizeVirtualPath(virtualPath);
+        var slash = normalized.LastIndexOf('/');
+        var folder = slash <= 0 ? "/" : normalized[..slash];
+        var name = slash >= 0 && slash < normalized.Length - 1
+            ? normalized[(slash + 1)..]
+            : normalized.TrimStart('/');
+
+        var extension = Path.GetExtension(name);
+        var stem = string.IsNullOrEmpty(extension)
+            ? name
+            : name[..^extension.Length];
+        var copyName = string.IsNullOrEmpty(extension)
+            ? $"{stem} - Copy {copyNumber}"
+            : $"{stem} - Copy {copyNumber}{extension}";
+
+        return CombineVirtualPath(folder, copyName);
+    }
+
+    private static bool IsSameOrChildPath(string path, string possibleParent)
+    {
+        var normalizedPath = NormalizeVirtualPath(path);
+        var normalizedParent = NormalizeVirtualPath(possibleParent);
+        return normalizedPath.Equals(normalizedParent, StringComparison.OrdinalIgnoreCase) ||
+               normalizedPath.StartsWith(normalizedParent.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string CombineVirtualPath(string folderPath, string name)
+    {
+        var folder = string.IsNullOrWhiteSpace(folderPath) ? "/" : folderPath.TrimEnd('/');
+        return folder == "/" ? "/" + name : folder + "/" + name;
+    }
+
+    private static string NormalizeVirtualPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return "/";
+
+        var normalized = path.Replace('\\', '/').Trim();
+        if (!normalized.StartsWith('/'))
+            normalized = "/" + normalized;
+        return normalized.Length > 1 ? normalized.TrimEnd('/') : normalized;
+    }
+
+    private static string SanitizeTempFileName(string name)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        var chars = name.Select(c => invalid.Contains(c) ? '_' : c).ToArray();
+        var safe = new string(chars).Trim();
+        return string.IsNullOrWhiteSpace(safe) ? "file" : safe;
     }
 
     [RelayCommand]
@@ -710,6 +1652,8 @@ public partial class MainViewModel : ObservableObject
             : $"✗ Erro: {_discbox?.LastError()}";
 
         await RefreshAsync();
+        if (ok)
+            await BackupActiveDriveAsync($"Renomeado para '{newName}'.");
     }
 
     [RelayCommand]
@@ -747,23 +1691,6 @@ public partial class MainViewModel : ObservableObject
             Breadcrumbs.Add(new BreadcrumbItem { Label = part, Path = built });
         }
     }
-
-    private static FileEntry[] GetPlaceholderEntries(string path) => path switch
-    {
-        "/" =>
-        [
-            new() { Id=1, Name="Photos",     VirtualPath="/Photos",     Type=EntryType.Folder, CreatedAt=DateTime.Now, ModifiedAt=DateTime.Now },
-            new() { Id=2, Name="Videos",     VirtualPath="/Videos",     Type=EntryType.Folder, CreatedAt=DateTime.Now, ModifiedAt=DateTime.Now },
-            new() { Id=3, Name="Documents",  VirtualPath="/Documents",  Type=EntryType.Folder, CreatedAt=DateTime.Now, ModifiedAt=DateTime.Now },
-            new() { Id=4, Name="report.pdf", VirtualPath="/report.pdf", Type=EntryType.File,   SizeBytes=2_400_000, MimeType="application/pdf", CreatedAt=DateTime.Now, ModifiedAt=DateTime.Now },
-        ],
-        "/Photos" =>
-        [
-            new() { Id=10, Name="cat.jpg",     VirtualPath="/Photos/cat.jpg",     Type=EntryType.File, SizeBytes=512_000,   MimeType="image/jpeg", CreatedAt=DateTime.Now, ModifiedAt=DateTime.Now },
-            new() { Id=11, Name="holiday.png", VirtualPath="/Photos/holiday.png", Type=EntryType.File, SizeBytes=3_100_000, MimeType="image/png",  CreatedAt=DateTime.Now, ModifiedAt=DateTime.Now },
-        ],
-        _ => []
-    };
 
     [RelayCommand]
     private void AddToQuickAccess(FileEntry? entry)

@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 
 namespace DiscBox.Models;
@@ -8,8 +9,10 @@ public enum EntryType { File, Folder }
 /// Represents one item (file or folder) in the DiscBox virtual filesystem.
 /// Mirrors the discbox_entry_t struct from libdiscbox.
 /// </summary>
-public class FileEntry
+public class FileEntry : ObservableObject
 {
+    private bool _isUiSelected;
+
     public long   Id            { get; set; }
     public string Name         { get; set; } = string.Empty;
     public string VirtualPath  { get; set; } = string.Empty;
@@ -21,6 +24,11 @@ public class FileEntry
     public DateTime CreatedAt  { get; set; }
     public DateTime ModifiedAt { get; set; }
     public bool   Encrypted    { get; set; }
+    public bool IsUiSelected
+    {
+        get => _isUiSelected;
+        set => SetProperty(ref _isUiSelected, value);
+    }
 
     // ── Computed helpers ──────────────────────────────────────
 

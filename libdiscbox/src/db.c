@@ -271,7 +271,7 @@ int db_update(db_ctx_t *ctx, const db_entry_t *e) {
 
     const char *sql =
         "UPDATE entries SET "
-        "name=?, virtual_path=?, size_bytes=?, mime_type=?, "
+        "parent_id=?, name=?, virtual_path=?, size_bytes=?, mime_type=?, "
         "chunk_message_ids=?, chunk_urls=?, thumbnail_message_id=?, thumbnail_url=?, "
         "encrypted=?, modified_at=? "
         "WHERE id=?;";
@@ -279,21 +279,67 @@ int db_update(db_ctx_t *ctx, const db_entry_t *e) {
     sqlite3_stmt *stmt = NULL;
     if (sqlite3_prepare_v2(ctx->db, sql, -1, &stmt, NULL) != SQLITE_OK) return -1;
 
-    sqlite3_bind_text (stmt, 1,  e->name,                 -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text (stmt, 2,  e->virtual_path,         -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int64(stmt, 3,  e->size_bytes);
-    sqlite3_bind_text (stmt, 4,  e->mime_type,            -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text (stmt, 5,  e->chunk_message_ids,    -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text (stmt, 6,  e->chunk_urls,           -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text (stmt, 7,  e->thumbnail_message_id, -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text (stmt, 8,  e->thumbnail_url,        -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int  (stmt, 9,  e->encrypted);
-    sqlite3_bind_int64(stmt, 10, (int64_t)time(NULL));
-    sqlite3_bind_int64(stmt, 11, e->id);
+    sqlite3_bind_int64(stmt, 1,  e->parent_id);
+    sqlite3_bind_text (stmt, 2,  e->name,                 -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 3,  e->virtual_path,         -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 4,  e->size_bytes);
+    sqlite3_bind_text (stmt, 5,  e->mime_type,            -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 6,  e->chunk_message_ids,    -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 7,  e->chunk_urls,           -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 8,  e->thumbnail_message_id, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 9,  e->thumbnail_url,        -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int  (stmt, 10, e->encrypted);
+    sqlite3_bind_int64(stmt, 11, (int64_t)time(NULL));
+    sqlite3_bind_int64(stmt, 12, e->id);
 
     int rc = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    return (rc == SQLITE_DONE) ? 0 : -1;
+    if (rc != SQLITE_DONE) {
+        set_error(ctx, "update failed: %s", sqlite3_errmsg(ctx->db));
+        return -1;
+    }
+    return 0;
+}
+
+int db_update_descendant_paths(
+    db_ctx_t   *ctx,
+    int64_t     folder_id,
+    const char *old_prefix,
+    const char *new_prefix)
+{
+    if (!ctx || !old_prefix || !new_prefix) return -1;
+
+    const char *sql =
+        "WITH RECURSIVE subtree(id) AS ("
+        "  SELECT id FROM entries WHERE parent_id = ?"
+        "  UNION ALL"
+        "  SELECT e.id FROM entries e JOIN subtree s ON e.parent_id = s.id"
+        ") "
+        "UPDATE entries SET "
+        "  virtual_path = ? || substr(virtual_path, length(?) + 1),"
+        "  modified_at = ? "
+        "WHERE id IN (SELECT id FROM subtree);";
+
+    sqlite3_stmt *stmt = NULL;
+    if (sqlite3_prepare_v2(ctx->db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        set_error(ctx, "update descendant paths prepare: %s", sqlite3_errmsg(ctx->db));
+        return -1;
+    }
+
+    sqlite3_bind_int64(stmt, 1, folder_id);
+    sqlite3_bind_text (stmt, 2, new_prefix, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text (stmt, 3, old_prefix, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 4, (int64_t)time(NULL));
+
+    int rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE) {
+        set_error(ctx, "update descendant paths failed: %s", sqlite3_errmsg(ctx->db));
+        return -1;
+    }
+
+    return 0;
 }
 
 int db_update_urls(
@@ -443,6 +489,49 @@ int64_t db_total_size(db_ctx_t *ctx) {
     if (sqlite3_step(stmt) == SQLITE_ROW) total = sqlite3_column_int64(stmt, 0);
     sqlite3_finalize(stmt);
     return total;
+}
+
+int db_backup_to_file(db_ctx_t *ctx, const char *backup_path) {
+    if (!ctx || !ctx->db || !backup_path) return -1;
+
+    remove(backup_path);
+
+    sqlite3 *backup_db = NULL;
+    int rc = sqlite3_open(backup_path, &backup_db);
+    if (rc != SQLITE_OK) {
+        set_error(ctx, "backup open failed: %s",
+                  backup_db ? sqlite3_errmsg(backup_db) : "unknown error");
+        if (backup_db) sqlite3_close(backup_db);
+        return -1;
+    }
+
+    sqlite3_backup *backup = sqlite3_backup_init(backup_db, "main", ctx->db, "main");
+    if (!backup) {
+        set_error(ctx, "backup init failed: %s", sqlite3_errmsg(backup_db));
+        sqlite3_close(backup_db);
+        return -1;
+    }
+
+    rc = sqlite3_backup_step(backup, -1);
+    int finish_rc = sqlite3_backup_finish(backup);
+    if (finish_rc != SQLITE_OK)
+        rc = finish_rc;
+
+    if (rc != SQLITE_DONE && rc != SQLITE_OK) {
+        set_error(ctx, "backup failed: %s", sqlite3_errmsg(backup_db));
+        sqlite3_close(backup_db);
+        remove(backup_path);
+        return -1;
+    }
+
+    rc = sqlite3_close(backup_db);
+    if (rc != SQLITE_OK) {
+        set_error(ctx, "backup close failed");
+        remove(backup_path);
+        return -1;
+    }
+
+    return 0;
 }
 
 /* ── Memory ──────────────────────────────────────────────────── */

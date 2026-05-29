@@ -1,7 +1,7 @@
 CMakeFiles/discbox_static.dir/src/discord.c.obj: \
- C:\Users\jpmmm\Downloads\libdiscbox\src\discord.c \
- C:\Users\jpmmm\Downloads\libdiscbox\src\discord.h \
- C:\Users\jpmmm\Downloads\libdiscbox\src\ratelimit.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discord.c \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discord.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\ratelimit.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdint.h \
  C:/msys64/mingw64/include/stdint.h C:/msys64/mingw64/include/crtdefs.h \
  C:/msys64/mingw64/include/corecrt.h C:/msys64/mingw64/include/_mingw.h \

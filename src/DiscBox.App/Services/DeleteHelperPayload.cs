@@ -4,6 +4,7 @@ internal sealed class DeleteHelperRequest
 {
     public string WebhookUrl { get; set; } = string.Empty;
     public string DbPath { get; set; } = string.Empty;
+    public bool Encrypt { get; set; }
     public string VirtualPath { get; set; } = string.Empty;
     public string ResultPath { get; set; } = string.Empty;
     public string ProgressPath { get; set; } = string.Empty;

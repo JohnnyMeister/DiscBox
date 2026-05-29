@@ -9,6 +9,7 @@
         <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
         <converters:FileEntryToIconConverter x:Key="FileEntryToIconConverter"/>
         <converters:FileEntryToColorConverter x:Key="FileEntryToColorConverter"/>
+        <converters:SelectionBackgroundConverter x:Key="SelectionBackgroundConverter"/>
     </Application.Resources>
 
     <Application.Styles>

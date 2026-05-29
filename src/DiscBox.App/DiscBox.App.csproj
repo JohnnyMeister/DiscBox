@@ -42,6 +42,9 @@
     <Compile Update="Views\ConfirmDeleteDialog.axaml.cs">
       <DependentUpon>ConfirmDeleteDialog.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\TransferProgressWindow.axaml.cs">
+      <DependentUpon>TransferProgressWindow.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

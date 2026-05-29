@@ -46,9 +46,7 @@ public partial class SetupViewModel : ObservableObject
 
     // ── Commands ──────────────────────────────────────────────
 
-    private bool CanSave => !string.IsNullOrWhiteSpace(WebhookUrl)
-                         && WebhookUrl.StartsWith("https://discord.com/api/webhooks/")
-                         && !IsValidating;
+    private bool CanSave => ConfigService.IsValidWebhookUrl(WebhookUrl) && !IsValidating;
 
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync()

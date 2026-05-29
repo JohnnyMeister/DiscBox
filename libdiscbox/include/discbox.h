@@ -138,6 +138,16 @@ discbox_ctx_t *discbox_init(
 );
 
 /**
+ * Convenience initializer for consumers that cannot easily marshal
+ * discbox_config_t across an FFI boundary.
+ */
+discbox_ctx_t *discbox_init_with_options(
+    const char          *webhook_url,
+    const char          *db_path,
+    int                  encrypt
+);
+
+/**
  * Free a context and release all resources.
  * Safe to call with NULL.
  */
@@ -273,6 +283,14 @@ discbox_err_t discbox_download(
     const char           *local_path,
     discbox_progress_cb_t progress_cb,
     void                 *userdata
+);
+
+/**
+ * Write a consistent standalone SQLite backup of the current drive database.
+ */
+discbox_err_t discbox_backup_database(
+    discbox_ctx_t        *ctx,
+    const char           *local_path
 );
 
 /* ─────────────────────────── Utilities ─────────────────────────── */

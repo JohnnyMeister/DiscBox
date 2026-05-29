@@ -1,3 +1,3 @@
 C:\msys64\mingw64\bin\cmake.exe -E rm -f CMakeFiles\discbox_shared.dir/objects.a
 C:\msys64\mingw64\bin\ar.exe qc CMakeFiles\discbox_shared.dir/objects.a @CMakeFiles\discbox_shared.dir\objects1.rsp
-C:\msys64\mingw64\bin\cc.exe -O3 -DNDEBUG -shared -o libdiscbox.dll -Wl,--out-implib,libdiscbox.dll.a -Wl,--major-image-version,0,--minor-image-version,1 -Wl,--whole-archive CMakeFiles\discbox_shared.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\discbox_shared.dir\linkLibs.rsp
+C:\msys64\mingw64\bin\cc.exe -shared -o libdiscbox.dll -Wl,--out-implib,libdiscbox.dll.a -Wl,--major-image-version,0,--minor-image-version,1 -Wl,--whole-archive CMakeFiles\discbox_shared.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\discbox_shared.dir\linkLibs.rsp

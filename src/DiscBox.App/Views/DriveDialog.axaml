@@ -1,0 +1,80 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        x:Class="DiscBox.Views.DriveDialog"
+        Title="Adicionar drive"
+        Width="500" Height="430"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B0F19"
+        ExtendClientAreaToDecorationsHint="True">
+
+  <Grid RowDefinitions="30,*">
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="Adicionar drive"
+                 Foreground="#8E9297" FontSize="12"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+
+    <Border Grid.Row="1" Background="#161B29" Padding="28">
+      <StackPanel Spacing="18">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <material:MaterialIcon Kind="Harddisk" Foreground="#00E5FF" Width="26" Height="26"/>
+          <TextBlock Text="Nova drive DiscBox"
+                     Foreground="#E3E5E8" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="Nome da drive" Foreground="#8E9297" FontSize="12" FontWeight="SemiBold"/>
+          <TextBox x:Name="NameBox"
+                   Watermark="My DiscBox"
+                   Background="#0B0F19" Foreground="#E3E5E8"
+                   BorderBrush="#2A324A" CornerRadius="8"
+                   Padding="14,11" FontSize="14"/>
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+          <TextBlock Text="Discord Webhook URL" Foreground="#8E9297" FontSize="12" FontWeight="SemiBold"/>
+          <TextBox x:Name="WebhookBox"
+                   Watermark="https://discord.com/api/webhooks/..."
+                   FontFamily="Cascadia Code,Consolas,monospace"
+                   Background="#0B0F19" Foreground="#00E5FF"
+                   BorderBrush="#2A324A" CornerRadius="8"
+                   Padding="14,11" FontSize="12"/>
+        </StackPanel>
+
+        <Border Background="#0B0F19" BorderBrush="#2A324A" BorderThickness="1"
+                CornerRadius="8" Padding="14,12">
+          <CheckBox x:Name="EncryptBox" Foreground="#E3E5E8" FontWeight="SemiBold">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <material:MaterialIcon Kind="ShieldLockOutline" Foreground="#00E5FF"
+                                     Width="18" Height="18" VerticalAlignment="Center"/>
+              <TextBlock Text="Encriptar ficheiros nesta drive" VerticalAlignment="Center"/>
+            </StackPanel>
+          </CheckBox>
+        </Border>
+
+        <TextBlock x:Name="ErrorText"
+                   Text=""
+                   Foreground="#F87171"
+                   FontSize="12"
+                   IsVisible="False"
+                   TextWrapping="Wrap"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,4,0,0">
+          <Button Content="Cancelar" Click="OnCancel"
+                  Background="#2A324A" Foreground="#E3E5E8"
+                  CornerRadius="8" Padding="20,10" FontWeight="SemiBold"/>
+          <Button Click="OnAdd"
+                  Background="#00E5FF" Foreground="#0B0F19"
+                  CornerRadius="8" Padding="20,10" FontWeight="Bold">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <material:MaterialIcon Kind="Plus" Width="18" Height="18"/>
+              <TextBlock Text="Adicionar"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

@@ -32,12 +32,36 @@
       <Setter Property="Padding" Value="0"/>
       <Setter Property="Margin" Value="0,2"/>
       <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </ControlTemplate>
+      </Setter>
     </Style>
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-      <Setter Property="Background" Value="#161E33"/>
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="#121826"/>
+    </Style>
+    <Style Selector="TextBox.search-box">
+      <Setter Property="Background" Value="#111622"/>
+      <Setter Property="Foreground" Value="#E3E5E8"/>
+      <Setter Property="BorderBrush" Value="#2A324A"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Padding" Value="34,8,12,8"/>
+      <Setter Property="Height" Value="36"/>
+      <Setter Property="FontSize" Value="13"/>
+    </Style>
+    <Style Selector="TextBox.search-box:focus">
+      <Setter Property="BorderBrush" Value="#00E5FF"/>
     </Style>
   </Window.Styles>
 
@@ -77,39 +101,79 @@
                   CornerRadius="8" Height="40" FontSize="13" FontWeight="SemiBold"
                   Margin="0,4,0,0">
             <StackPanel Orientation="Horizontal" Spacing="8">
-              <material:MaterialIcon Kind="Import" Width="18" Height="18"/>
-              <TextBlock Text="Importar Disbox" VerticalAlignment="Center"/>
+              <material:MaterialIcon Kind="CloudSync" Width="18" Height="18"/>
+              <TextBlock Text="Sincronizar Cloud" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
         </Border>
       
         <StackPanel DockPanel.Dock="Top" Margin="16,12" Spacing="2">
-          <TextBlock Text="DRIVE" FontSize="11" FontWeight="Bold"
-                     Foreground="#6A0DAD" Margin="12,0,0,10" LetterSpacing="2"/>
-          <Button Classes="sidebar-item" Command="{Binding NavigateToCommand}" CommandParameter="/">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <material:MaterialIcon Kind="Home" Width="20" Height="20"/>
-              <TextBlock Text="Root" VerticalAlignment="Center" FontSize="14"/>
-            </StackPanel>
-          </Button>
-          <Button Classes="sidebar-item" Command="{Binding NavigateToCommand}" CommandParameter="/Photos">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <material:MaterialIcon Kind="Image" Width="20" Height="20"/>
-              <TextBlock Text="Photos" VerticalAlignment="Center" FontSize="14"/>
-            </StackPanel>
-          </Button>
-          <Button Classes="sidebar-item" Command="{Binding NavigateToCommand}" CommandParameter="/Videos">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <material:MaterialIcon Kind="Video" Width="20" Height="20"/>
-              <TextBlock Text="Videos" VerticalAlignment="Center" FontSize="14"/>
-            </StackPanel>
-          </Button>
-          <Button Classes="sidebar-item" Command="{Binding NavigateToCommand}" CommandParameter="/Documents">
-            <StackPanel Orientation="Horizontal" Spacing="12">
-              <material:MaterialIcon Kind="FileDocument" Width="20" Height="20"/>
-              <TextBlock Text="Documents" VerticalAlignment="Center" FontSize="14"/>
-            </StackPanel>
-          </Button>
+          <Grid ColumnDefinitions="*,Auto" Margin="12,0,0,10">
+            <TextBlock Grid.Column="0" Text="DRIVE" FontSize="11" FontWeight="Bold"
+                       Foreground="#6A0DAD" LetterSpacing="2" VerticalAlignment="Center"/>
+            <Button Grid.Column="1"
+                    Command="{Binding AddDriveCommand}"
+                    Background="Transparent"
+                    Foreground="#00E5FF"
+                    Width="28" Height="28"
+                    CornerRadius="6"
+                    Padding="0"
+                    ToolTip.Tip="Adicionar drive">
+              <material:MaterialIcon Kind="Plus" Width="18" Height="18"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+          </Grid>
+
+          <ItemsControl ItemsSource="{Binding Drives}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                  <Button Grid.Column="0"
+                          Classes="sidebar-item"
+                          Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SwitchDriveCommand}"
+                          CommandParameter="{Binding}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                      <material:MaterialIcon Kind="Harddisk" Width="20" Height="20" Foreground="#00E5FF"/>
+                      <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="14"
+                                 TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                  </Button>
+                  <Button Grid.Column="1"
+                          Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ToggleDriveEncryptionCommand}"
+                          CommandParameter="{Binding}"
+                          Background="Transparent"
+                          Foreground="#8E9297"
+                          Width="28" Height="38"
+                          Padding="0"
+                          CornerRadius="6"
+                          ToolTip.Tip="Alternar encriptação">
+                    <Panel Width="16" Height="16">
+                      <material:MaterialIcon Kind="LockOpen" Width="16" Height="16"
+                                             Foreground="#8E9297"
+                                             IsVisible="{Binding !Encrypt}"
+                                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                      <material:MaterialIcon Kind="Lock" Width="16" Height="16"
+                                             Foreground="#00E5FF"
+                                             IsVisible="{Binding Encrypt}"
+                                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Panel>
+                  </Button>
+                  <Button Grid.Column="2"
+                          Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RenameDriveCommand}"
+                          CommandParameter="{Binding}"
+                          Background="Transparent"
+                          Foreground="#8E9297"
+                          Width="28" Height="38"
+                          Padding="0"
+                          CornerRadius="6"
+                          ToolTip.Tip="Renomear drive">
+                    <material:MaterialIcon Kind="Pencil" Width="16" Height="16"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                  </Button>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
 
           <TextBlock Text="QUICK ACCESS" FontSize="11" FontWeight="Bold"
                      Foreground="#6A0DAD" Margin="12,16,0,10" LetterSpacing="2"
@@ -152,7 +216,7 @@
         <!-- Toolbar -->
         <Border DockPanel.Dock="Top" Background="#0B0F19" Height="70"
                 BorderBrush="#2A324A" BorderThickness="0,0,0,1" Padding="20,0">
-          <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+          <Grid ColumnDefinitions="Auto,*,280,Auto" VerticalAlignment="Center">
             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
               <Button Command="{Binding GoUpCommand}"
                       Background="#161B29" Foreground="#00E5FF"
@@ -190,7 +254,18 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Button Grid.Column="2"
+            <Grid Grid.Column="2" Margin="0,0,14,0" VerticalAlignment="Center">
+              <material:MaterialIcon Kind="Magnify" Width="18" Height="18"
+                                     Foreground="#8E9297"
+                                     Margin="11,0,0,0"
+                                     HorizontalAlignment="Left" VerticalAlignment="Center"
+                                     IsHitTestVisible="False"/>
+              <TextBox Classes="search-box"
+                       Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       Watermark="Pesquisar nesta drive"/>
+            </Grid>
+
+            <Button Grid.Column="3"
                     Command="{Binding NewFolderCommand}"
                     Background="#6A0DAD" Foreground="White"
                     CornerRadius="8" Padding="14,8" FontSize="13" FontWeight="SemiBold">
@@ -215,11 +290,15 @@
         </Border>
 
         <!-- File list -->
-        <ListBox ItemsSource="{Binding Entries}"
-                 SelectedItem="{Binding SelectedEntry}"
+        <Grid x:Name="FileListHost"
+              Margin="12"
+              ClipToBounds="True">
+        <ListBox x:Name="FileList"
+                 ItemsSource="{Binding Entries}"
+                 SelectionMode="Multiple"
+                 SelectionChanged="OnFileSelectionChanged"
                  DoubleTapped="OnEntryDoubleTapped"
-                 Background="Transparent"
-                 Margin="12">
+                 Background="Transparent">
           <ListBox.ContextMenu>
             <ContextMenu Background="#161B29" BorderBrush="#2A324A" Foreground="#E3E5E8">
               <MenuItem Header="Download" Command="{Binding DownloadEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
@@ -263,7 +342,9 @@
           </ListBox.ContextMenu>
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="m:FileEntry">
-              <Border CornerRadius="8" Padding="8">
+              <Border CornerRadius="8"
+                      Padding="8"
+                      Background="{Binding IsUiSelected, Converter={StaticResource SelectionBackgroundConverter}}">
                 <Grid ColumnDefinitions="48,*,120,160" Height="48">
                   <Panel Grid.Column="0" Width="40" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <material:MaterialIcon Kind="{Binding Converter={StaticResource FileEntryToIconConverter}}" 
@@ -292,6 +373,15 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
+          <Canvas IsHitTestVisible="False" Panel.ZIndex="10">
+            <Border x:Name="SelectionRectangle"
+                    IsVisible="False"
+                    Background="#556A0DAD"
+                    BorderBrush="#FF00E5FF"
+                    BorderThickness="2"
+                    CornerRadius="3"/>
+          </Canvas>
+        </Grid>
 
       </DockPanel>
     </Grid>

@@ -56,10 +56,10 @@ RM = C:\msys64\mingw64\bin\cmake.exe -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = C:\Users\jpmmm\Downloads\libdiscbox
+CMAKE_SOURCE_DIR = C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\jpmmm\Downloads\libdiscbox\build
+CMAKE_BINARY_DIR = C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -141,9 +141,9 @@ install/strip/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles C:\Users\jpmmm\Downloads\libdiscbox\build\\CMakeFiles\progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\\CMakeFiles\progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -340,6 +340,33 @@ src/discbox.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\discbox_static.dir\build.make CMakeFiles/discbox_static.dir/src/discbox.c.s
 .PHONY : src/discbox.c.s
 
+src/discbox_crypto.obj: src/discbox_crypto.c.obj
+.PHONY : src/discbox_crypto.obj
+
+# target to build an object file
+src/discbox_crypto.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\discbox_shared.dir\build.make CMakeFiles/discbox_shared.dir/src/discbox_crypto.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\discbox_static.dir\build.make CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj
+.PHONY : src/discbox_crypto.c.obj
+
+src/discbox_crypto.i: src/discbox_crypto.c.i
+.PHONY : src/discbox_crypto.i
+
+# target to preprocess a source file
+src/discbox_crypto.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\discbox_shared.dir\build.make CMakeFiles/discbox_shared.dir/src/discbox_crypto.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\discbox_static.dir\build.make CMakeFiles/discbox_static.dir/src/discbox_crypto.c.i
+.PHONY : src/discbox_crypto.c.i
+
+src/discbox_crypto.s: src/discbox_crypto.c.s
+.PHONY : src/discbox_crypto.s
+
+# target to generate assembly for a file
+src/discbox_crypto.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\discbox_shared.dir\build.make CMakeFiles/discbox_shared.dir/src/discbox_crypto.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\discbox_static.dir\build.make CMakeFiles/discbox_static.dir/src/discbox_crypto.c.s
+.PHONY : src/discbox_crypto.c.s
+
 src/discord.obj: src/discord.c.obj
 .PHONY : src/discord.obj
 
@@ -472,6 +499,9 @@ help:
 	@echo ... src/discbox.obj
 	@echo ... src/discbox.i
 	@echo ... src/discbox.s
+	@echo ... src/discbox_crypto.obj
+	@echo ... src/discbox_crypto.i
+	@echo ... src/discbox_crypto.s
 	@echo ... src/discord.obj
 	@echo ... src/discord.i
 	@echo ... src/discord.s

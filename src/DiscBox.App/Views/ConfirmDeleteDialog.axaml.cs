@@ -11,14 +11,16 @@ public partial class ConfirmDeleteDialog : Window
         InitializeComponent();
     }
 
-    public ConfirmDeleteDialog(string name, bool isFolder)
+    public ConfirmDeleteDialog(string name, bool isFolder, int itemCount = 1)
     {
         InitializeComponent();
         var tipo = isFolder ? "a pasta" : "o ficheiro";
         var msgText = this.FindControl<TextBlock>("MessageText");
         if (msgText != null)
         {
-            msgText.Text = $"Tens a certeza que queres apagar {tipo} \"{name}\"?";
+            msgText.Text = itemCount > 1
+                ? $"Tens a certeza que queres apagar {itemCount} itens selecionados?"
+                : $"Tens a certeza que queres apagar {tipo} \"{name}\"?";
         }
     }
 

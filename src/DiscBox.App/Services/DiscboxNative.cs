@@ -17,6 +17,12 @@ internal static class DiscboxNative
         [MarshalAs(UnmanagedType.LPStr)] string db_path, 
         IntPtr config);
 
+    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern IntPtr discbox_init_with_options(
+        [MarshalAs(UnmanagedType.LPStr)] string webhook_url,
+        [MarshalAs(UnmanagedType.LPStr)] string db_path,
+        int encrypt);
+
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void discbox_free(IntPtr ctx);
 
@@ -43,9 +49,11 @@ internal static class DiscboxNative
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void discbox_free_entries(IntPtr entries, UIntPtr count);
 
-    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern int discbox_rename(
-        IntPtr ctx, string old_path, string new_path);
+        IntPtr ctx,
+        [MarshalAs(UnmanagedType.LPStr)] string old_path,
+        [MarshalAs(UnmanagedType.LPStr)] string new_path);
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern int discbox_delete(
@@ -73,6 +81,11 @@ internal static class DiscboxNative
     [MarshalAs(UnmanagedType.LPStr)] string virtual_path,
     [MarshalAs(UnmanagedType.LPStr)] string local_path,
     ProgressCallback? progress_cb, IntPtr userdata);
+
+    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    public static extern int discbox_backup_database(
+        IntPtr ctx,
+        [MarshalAs(UnmanagedType.LPStr)] string local_path);
 
     // ── Utilities ─────────────────────────────────────────────
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]

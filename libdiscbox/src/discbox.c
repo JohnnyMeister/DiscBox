@@ -10,6 +10,7 @@
 #include "chunk.h"
 #include "db.h"
 #include "discord.h"
+#include "discbox_crypto.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -292,6 +293,43 @@ static const char *basename_of(const char *path) {
   return last ? last + 1 : path;
 }
 
+static int is_same_or_child_path(const char *path, const char *possible_parent) {
+  size_t parent_len = strlen(possible_parent);
+  return strcmp(path, possible_parent) == 0 ||
+         (strncmp(path, possible_parent, parent_len) == 0 &&
+          path[parent_len] == '/');
+}
+
+static int is_safe_filename_char(char c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9') || c == '.' || c == '_' || c == '-';
+}
+
+static void build_chunk_filename(const char *fname, int chunk_index, char *out,
+                                 size_t out_size) {
+  if (!out || out_size == 0)
+    return;
+
+  char safe[180];
+  size_t pos = 0;
+  if (fname) {
+    for (const unsigned char *p = (const unsigned char *)fname;
+         *p && pos < sizeof(safe) - 1; p++) {
+      safe[pos++] = is_safe_filename_char((char)*p) ? (char)*p : '_';
+    }
+  }
+
+  while (pos > 0 && safe[pos - 1] == '_')
+    pos--;
+  if (pos == 0) {
+    memcpy(safe, "file", 4);
+    pos = 4;
+  }
+  safe[pos] = '\0';
+
+  snprintf(out, out_size, "%s.chunk_%04d", safe, chunk_index);
+}
+
 /**
  * Get or create the parent_id for a virtual path.
  * e.g. for "/Photos/2024/img.jpg", ensures /Photos and /Photos/2024 exist
@@ -381,6 +419,13 @@ discbox_ctx_t *discbox_init(const char *webhook_url, const char *db_path,
 fail:
   discbox_free(ctx);
   return NULL;
+}
+
+discbox_ctx_t *discbox_init_with_options(const char *webhook_url,
+                                         const char *db_path, int encrypt) {
+  discbox_config_t config = {0};
+  config.encrypt = encrypt ? 1 : 0;
+  return discbox_init(webhook_url, db_path, &config);
 }
 
 void discbox_free(discbox_ctx_t *ctx) {
@@ -535,8 +580,32 @@ discbox_err_t discbox_rename(discbox_ctx_t *ctx, const char *old_path,
     return DISCBOX_ERR_NOT_FOUND;
   }
 
+  if (entry.type == DB_ENTRY_FOLDER && is_same_or_child_path(new_path, old_path)) {
+    set_error(ctx, "rename: cannot move folder inside itself: %s -> %s",
+              old_path, new_path);
+    db_entry_free(&entry);
+    return DISCBOX_ERR_ARGS;
+  }
+
+  db_entry_t existing = {0};
+  if (db_get_by_path(&ctx->db, new_path, &existing) == 0) {
+    int same_entry = existing.id == entry.id;
+    db_entry_free(&existing);
+    if (!same_entry) {
+      set_error(ctx, "rename: path already exists: %s", new_path);
+      db_entry_free(&entry);
+      return DISCBOX_ERR_DB;
+    }
+  }
+
   int64_t new_parent_id = ensure_parent(ctx, new_path);
   if (new_parent_id == -2) {
+    db_entry_free(&entry);
+    return DISCBOX_ERR_IO;
+  }
+
+  char *old_prefix = strdup(entry.virtual_path);
+  if (!old_prefix) {
     db_entry_free(&entry);
     return DISCBOX_ERR_IO;
   }
@@ -549,9 +618,18 @@ discbox_err_t discbox_rename(discbox_ctx_t *ctx, const char *old_path,
   entry.modified_at = time(NULL);
 
   int rc = db_update(&ctx->db, &entry);
+  if (rc == 0 && entry.type == DB_ENTRY_FOLDER) {
+    rc = db_update_descendant_paths(&ctx->db, entry.id, old_prefix, new_path);
+  }
+  free(old_prefix);
   db_entry_free(&entry);
 
-  return (rc == 0) ? DISCBOX_OK : DISCBOX_ERR_DB;
+  if (rc != 0) {
+    set_error(ctx, "rename failed: %s", db_last_error(&ctx->db));
+    return DISCBOX_ERR_DB;
+  }
+
+  return DISCBOX_OK;
 }
 
 discbox_err_t discbox_delete_with_progress(discbox_ctx_t *ctx,
@@ -681,6 +759,8 @@ discbox_err_t discbox_upload(discbox_ctx_t *ctx, const char *local_path,
   }
 
   int chunk_count = chunk_count_for_size(file_size, ctx->config.chunk_size);
+  if (chunk_count == 0)
+    chunk_count = 1;
   const char *mime = mime_from_filename(local_path);
   const char *fname = basename_of(local_path);
 
@@ -725,8 +805,8 @@ discbox_err_t discbox_upload(discbox_ctx_t *ctx, const char *local_path,
 
     /* Build filename for this chunk: "filename.chunk_0002" */
     char chunk_filename[256];
-    snprintf(chunk_filename, sizeof(chunk_filename), "%s.chunk_%04d", fname,
-             chunk.index);
+    build_chunk_filename(fname, chunk.index, chunk_filename,
+                         sizeof(chunk_filename));
 
     /* Progress callback */
     if (progress_cb) {
@@ -740,15 +820,32 @@ discbox_err_t discbox_upload(discbox_ctx_t *ctx, const char *local_path,
       }
     }
 
+    uint8_t *upload_data = chunk.data;
+    size_t upload_size = chunk.size;
+    if (ctx->config.encrypt) {
+      if (discbox_crypto_encrypt_chunk(ctx->webhook_url, chunk.index,
+                                       chunk.data, chunk.size, &upload_data,
+                                       &upload_size) != 0) {
+        set_error(ctx, "failed to encrypt chunk %d", chunk.index);
+        chunk_free(&chunk);
+        err = DISCBOX_ERR_CRYPTO;
+        break;
+      }
+    }
+
     discord_upload_result_t result;
     if (discord_upload_chunk(&ctx->discord, ctx->webhook_url, chunk_filename,
-                             chunk.data, chunk.size, &result) != 0) {
+                             upload_data, upload_size, &result) != 0) {
       set_error(ctx, "failed to upload chunk %d: %s", chunk.index,
                 discord_client_last_error(&ctx->discord));
+      if (upload_data != chunk.data)
+        free(upload_data);
       chunk_free(&chunk);
       err = DISCBOX_ERR_NETWORK;
       break;
     }
+    if (upload_data != chunk.data)
+      free(upload_data);
 
     message_ids[chunk.index] = strdup(result.message_id);
     cdn_urls[chunk.index] = strdup(result.attachment_url);
@@ -1061,6 +1158,21 @@ if (url_count > 0) {
       break;
     }
 
+    if (entry.encrypted) {
+      uint8_t *plain = NULL;
+      size_t plain_size = 0;
+      if (discbox_crypto_decrypt_chunk(ctx->webhook_url, i, data, size,
+                                       &plain, &plain_size) != 0) {
+        set_error(ctx, "failed to decrypt chunk %d for %s", i, virtual_path);
+        free(data);
+        err = DISCBOX_ERR_CRYPTO;
+        break;
+      }
+      free(data);
+      data = plain;
+      size = plain_size;
+    }
+
     chunk_t chunk = {data, size, i, url_count};
     if (chunk_writer_write(&writer, &chunk) != 0) {
       set_error(ctx, "error writing chunk %d to disk", i);
@@ -1085,6 +1197,19 @@ if (url_count > 0) {
   free(urls);
   db_entry_free(&entry);
   return err;
+}
+
+discbox_err_t discbox_backup_database(discbox_ctx_t *ctx,
+                                      const char *local_path) {
+  if (!ctx || !local_path)
+    return DISCBOX_ERR_ARGS;
+
+  if (db_backup_to_file(&ctx->db, local_path) != 0) {
+    set_error(ctx, "database backup failed: %s", db_last_error(&ctx->db));
+    return DISCBOX_ERR_DB;
+  }
+
+  return DISCBOX_OK;
 }
 
 /* ── Utilities ───────────────────────────────────────────────── */

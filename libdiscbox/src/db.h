@@ -118,6 +118,16 @@ int db_list_children(
 int db_update(db_ctx_t *ctx, const db_entry_t *entry);
 
 /**
+ * Update virtual paths for every descendant of a moved folder.
+ */
+int db_update_descendant_paths(
+    db_ctx_t   *ctx,
+    int64_t     folder_id,
+    const char *old_prefix,
+    const char *new_prefix
+);
+
+/**
  * Update the CDN URLs for a file's chunks (called after re-fetching from Discord).
  */
 int db_update_urls(
@@ -156,6 +166,12 @@ int db_get_all_files_under(
  * Get the total byte count of all files in the database.
  */
 int64_t db_total_size(db_ctx_t *ctx);
+
+/**
+ * Copy the current SQLite database to a standalone backup file.
+ * Uses sqlite3_backup so WAL pages are included consistently.
+ */
+int db_backup_to_file(db_ctx_t *ctx, const char *backup_path);
 
 /* ── Memory management ───────────────────────────────────────── */
 

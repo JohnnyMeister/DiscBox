@@ -52,10 +52,10 @@ RM = C:\msys64\mingw64\bin\cmake.exe -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = C:\Users\jpmmm\Downloads\libdiscbox
+CMAKE_SOURCE_DIR = C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\jpmmm\Downloads\libdiscbox\build
+CMAKE_BINARY_DIR = C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/discbox_static.dir/depend.make
@@ -73,78 +73,93 @@ CMakeFiles/discbox_static.dir/codegen:
 
 CMakeFiles/discbox_static.dir/src/discbox.c.obj: CMakeFiles/discbox_static.dir/flags.make
 CMakeFiles/discbox_static.dir/src/discbox.c.obj: CMakeFiles/discbox_static.dir/includes_C.rsp
-CMakeFiles/discbox_static.dir/src/discbox.c.obj: C:/Users/jpmmm/Downloads/libdiscbox/src/discbox.c
+CMakeFiles/discbox_static.dir/src/discbox.c.obj: C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/discbox.c
 CMakeFiles/discbox_static.dir/src/discbox.c.obj: CMakeFiles/discbox_static.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/discbox_static.dir/src/discbox.c.obj"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/discbox.c.obj -MF CMakeFiles\discbox_static.dir\src\discbox.c.obj.d -o CMakeFiles\discbox_static.dir\src\discbox.c.obj -c C:\Users\jpmmm\Downloads\libdiscbox\src\discbox.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/discbox_static.dir/src/discbox.c.obj"
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/discbox.c.obj -MF CMakeFiles\discbox_static.dir\src\discbox.c.obj.d -o CMakeFiles\discbox_static.dir\src\discbox.c.obj -c C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discbox.c
 
 CMakeFiles/discbox_static.dir/src/discbox.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/discbox_static.dir/src/discbox.c.i"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Downloads\libdiscbox\src\discbox.c > CMakeFiles\discbox_static.dir\src\discbox.c.i
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discbox.c > CMakeFiles\discbox_static.dir\src\discbox.c.i
 
 CMakeFiles/discbox_static.dir/src/discbox.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/discbox_static.dir/src/discbox.c.s"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Downloads\libdiscbox\src\discbox.c -o CMakeFiles\discbox_static.dir\src\discbox.c.s
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discbox.c -o CMakeFiles\discbox_static.dir\src\discbox.c.s
 
 CMakeFiles/discbox_static.dir/src/chunk.c.obj: CMakeFiles/discbox_static.dir/flags.make
 CMakeFiles/discbox_static.dir/src/chunk.c.obj: CMakeFiles/discbox_static.dir/includes_C.rsp
-CMakeFiles/discbox_static.dir/src/chunk.c.obj: C:/Users/jpmmm/Downloads/libdiscbox/src/chunk.c
+CMakeFiles/discbox_static.dir/src/chunk.c.obj: C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/chunk.c
 CMakeFiles/discbox_static.dir/src/chunk.c.obj: CMakeFiles/discbox_static.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/discbox_static.dir/src/chunk.c.obj"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/chunk.c.obj -MF CMakeFiles\discbox_static.dir\src\chunk.c.obj.d -o CMakeFiles\discbox_static.dir\src\chunk.c.obj -c C:\Users\jpmmm\Downloads\libdiscbox\src\chunk.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/discbox_static.dir/src/chunk.c.obj"
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/chunk.c.obj -MF CMakeFiles\discbox_static.dir\src\chunk.c.obj.d -o CMakeFiles\discbox_static.dir\src\chunk.c.obj -c C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\chunk.c
 
 CMakeFiles/discbox_static.dir/src/chunk.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/discbox_static.dir/src/chunk.c.i"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Downloads\libdiscbox\src\chunk.c > CMakeFiles\discbox_static.dir\src\chunk.c.i
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\chunk.c > CMakeFiles\discbox_static.dir\src\chunk.c.i
 
 CMakeFiles/discbox_static.dir/src/chunk.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/discbox_static.dir/src/chunk.c.s"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Downloads\libdiscbox\src\chunk.c -o CMakeFiles\discbox_static.dir\src\chunk.c.s
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\chunk.c -o CMakeFiles\discbox_static.dir\src\chunk.c.s
 
 CMakeFiles/discbox_static.dir/src/discord.c.obj: CMakeFiles/discbox_static.dir/flags.make
 CMakeFiles/discbox_static.dir/src/discord.c.obj: CMakeFiles/discbox_static.dir/includes_C.rsp
-CMakeFiles/discbox_static.dir/src/discord.c.obj: C:/Users/jpmmm/Downloads/libdiscbox/src/discord.c
+CMakeFiles/discbox_static.dir/src/discord.c.obj: C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/discord.c
 CMakeFiles/discbox_static.dir/src/discord.c.obj: CMakeFiles/discbox_static.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/discbox_static.dir/src/discord.c.obj"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/discord.c.obj -MF CMakeFiles\discbox_static.dir\src\discord.c.obj.d -o CMakeFiles\discbox_static.dir\src\discord.c.obj -c C:\Users\jpmmm\Downloads\libdiscbox\src\discord.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/discbox_static.dir/src/discord.c.obj"
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/discord.c.obj -MF CMakeFiles\discbox_static.dir\src\discord.c.obj.d -o CMakeFiles\discbox_static.dir\src\discord.c.obj -c C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discord.c
 
 CMakeFiles/discbox_static.dir/src/discord.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/discbox_static.dir/src/discord.c.i"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Downloads\libdiscbox\src\discord.c > CMakeFiles\discbox_static.dir\src\discord.c.i
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discord.c > CMakeFiles\discbox_static.dir\src\discord.c.i
 
 CMakeFiles/discbox_static.dir/src/discord.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/discbox_static.dir/src/discord.c.s"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Downloads\libdiscbox\src\discord.c -o CMakeFiles\discbox_static.dir\src\discord.c.s
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discord.c -o CMakeFiles\discbox_static.dir\src\discord.c.s
 
 CMakeFiles/discbox_static.dir/src/db.c.obj: CMakeFiles/discbox_static.dir/flags.make
 CMakeFiles/discbox_static.dir/src/db.c.obj: CMakeFiles/discbox_static.dir/includes_C.rsp
-CMakeFiles/discbox_static.dir/src/db.c.obj: C:/Users/jpmmm/Downloads/libdiscbox/src/db.c
+CMakeFiles/discbox_static.dir/src/db.c.obj: C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/db.c
 CMakeFiles/discbox_static.dir/src/db.c.obj: CMakeFiles/discbox_static.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/discbox_static.dir/src/db.c.obj"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/db.c.obj -MF CMakeFiles\discbox_static.dir\src\db.c.obj.d -o CMakeFiles\discbox_static.dir\src\db.c.obj -c C:\Users\jpmmm\Downloads\libdiscbox\src\db.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/discbox_static.dir/src/db.c.obj"
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/db.c.obj -MF CMakeFiles\discbox_static.dir\src\db.c.obj.d -o CMakeFiles\discbox_static.dir\src\db.c.obj -c C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\db.c
 
 CMakeFiles/discbox_static.dir/src/db.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/discbox_static.dir/src/db.c.i"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Downloads\libdiscbox\src\db.c > CMakeFiles\discbox_static.dir\src\db.c.i
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\db.c > CMakeFiles\discbox_static.dir\src\db.c.i
 
 CMakeFiles/discbox_static.dir/src/db.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/discbox_static.dir/src/db.c.s"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Downloads\libdiscbox\src\db.c -o CMakeFiles\discbox_static.dir\src\db.c.s
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\db.c -o CMakeFiles\discbox_static.dir\src\db.c.s
 
 CMakeFiles/discbox_static.dir/src/ratelimit.c.obj: CMakeFiles/discbox_static.dir/flags.make
 CMakeFiles/discbox_static.dir/src/ratelimit.c.obj: CMakeFiles/discbox_static.dir/includes_C.rsp
-CMakeFiles/discbox_static.dir/src/ratelimit.c.obj: C:/Users/jpmmm/Downloads/libdiscbox/src/ratelimit.c
+CMakeFiles/discbox_static.dir/src/ratelimit.c.obj: C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/ratelimit.c
 CMakeFiles/discbox_static.dir/src/ratelimit.c.obj: CMakeFiles/discbox_static.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/discbox_static.dir/src/ratelimit.c.obj"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/ratelimit.c.obj -MF CMakeFiles\discbox_static.dir\src\ratelimit.c.obj.d -o CMakeFiles\discbox_static.dir\src\ratelimit.c.obj -c C:\Users\jpmmm\Downloads\libdiscbox\src\ratelimit.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/discbox_static.dir/src/ratelimit.c.obj"
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/ratelimit.c.obj -MF CMakeFiles\discbox_static.dir\src\ratelimit.c.obj.d -o CMakeFiles\discbox_static.dir\src\ratelimit.c.obj -c C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\ratelimit.c
 
 CMakeFiles/discbox_static.dir/src/ratelimit.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/discbox_static.dir/src/ratelimit.c.i"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Downloads\libdiscbox\src\ratelimit.c > CMakeFiles\discbox_static.dir\src\ratelimit.c.i
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\ratelimit.c > CMakeFiles\discbox_static.dir\src\ratelimit.c.i
 
 CMakeFiles/discbox_static.dir/src/ratelimit.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/discbox_static.dir/src/ratelimit.c.s"
-	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Downloads\libdiscbox\src\ratelimit.c -o CMakeFiles\discbox_static.dir\src\ratelimit.c.s
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\ratelimit.c -o CMakeFiles\discbox_static.dir\src\ratelimit.c.s
+
+CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj: CMakeFiles/discbox_static.dir/flags.make
+CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj: CMakeFiles/discbox_static.dir/includes_C.rsp
+CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj: C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/src/discbox_crypto.c
+CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj: CMakeFiles/discbox_static.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj"
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj -MF CMakeFiles\discbox_static.dir\src\discbox_crypto.c.obj.d -o CMakeFiles\discbox_static.dir\src\discbox_crypto.c.obj -c C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discbox_crypto.c
+
+CMakeFiles/discbox_static.dir/src/discbox_crypto.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/discbox_static.dir/src/discbox_crypto.c.i"
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discbox_crypto.c > CMakeFiles\discbox_static.dir\src\discbox_crypto.c.i
+
+CMakeFiles/discbox_static.dir/src/discbox_crypto.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/discbox_static.dir/src/discbox_crypto.c.s"
+	C:\msys64\mingw64\bin\cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discbox_crypto.c -o CMakeFiles\discbox_static.dir\src\discbox_crypto.c.s
 
 # Object files for target discbox_static
 discbox_static_OBJECTS = \
@@ -152,7 +167,8 @@ discbox_static_OBJECTS = \
 "CMakeFiles/discbox_static.dir/src/chunk.c.obj" \
 "CMakeFiles/discbox_static.dir/src/discord.c.obj" \
 "CMakeFiles/discbox_static.dir/src/db.c.obj" \
-"CMakeFiles/discbox_static.dir/src/ratelimit.c.obj"
+"CMakeFiles/discbox_static.dir/src/ratelimit.c.obj" \
+"CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj"
 
 # External object files for target discbox_static
 discbox_static_EXTERNAL_OBJECTS =
@@ -162,9 +178,10 @@ libdiscbox_static.a: CMakeFiles/discbox_static.dir/src/chunk.c.obj
 libdiscbox_static.a: CMakeFiles/discbox_static.dir/src/discord.c.obj
 libdiscbox_static.a: CMakeFiles/discbox_static.dir/src/db.c.obj
 libdiscbox_static.a: CMakeFiles/discbox_static.dir/src/ratelimit.c.obj
+libdiscbox_static.a: CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj
 libdiscbox_static.a: CMakeFiles/discbox_static.dir/build.make
 libdiscbox_static.a: CMakeFiles/discbox_static.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking C static library libdiscbox_static.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking C static library libdiscbox_static.a"
 	$(CMAKE_COMMAND) -P CMakeFiles\discbox_static.dir\cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\discbox_static.dir\link.txt --verbose=$(VERBOSE)
 
@@ -177,6 +194,6 @@ CMakeFiles/discbox_static.dir/clean:
 .PHONY : CMakeFiles/discbox_static.dir/clean
 
 CMakeFiles/discbox_static.dir/depend:
-	$(CMAKE_COMMAND) -E cmake_depends "MinGW Makefiles" C:\Users\jpmmm\Downloads\libdiscbox C:\Users\jpmmm\Downloads\libdiscbox C:\Users\jpmmm\Downloads\libdiscbox\build C:\Users\jpmmm\Downloads\libdiscbox\build C:\Users\jpmmm\Downloads\libdiscbox\build\CMakeFiles\discbox_static.dir\DependInfo.cmake "--color=$(COLOR)" discbox_static
+	$(CMAKE_COMMAND) -E cmake_depends "MinGW Makefiles" C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\build\CMakeFiles\discbox_static.dir\DependInfo.cmake "--color=$(COLOR)" discbox_static
 .PHONY : CMakeFiles/discbox_static.dir/depend
 

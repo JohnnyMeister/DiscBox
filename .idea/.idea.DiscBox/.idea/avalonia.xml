@@ -4,6 +4,8 @@
     <option name="projectPerEditor">
       <map>
         <entry key="src/DiscBox.App/Views/MainWindow.axaml" value="src/DiscBox.App/DiscBox.App.csproj" />
+        <entry key="src/DiscBox.App/Views/SetupWindow.axaml" value="src/DiscBox.App/DiscBox.App.csproj" />
+        <entry key="src/DiscBox.App/Views/TransferProgressWindow.axaml" value="src/DiscBox.App/DiscBox.App.csproj" />
       </map>
     </option>
   </component>

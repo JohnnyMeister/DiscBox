@@ -16,12 +16,12 @@ public class DiscboxService : IDisposable
 
     public bool IsAvailable => _ctx != IntPtr.Zero;
 
-    public DiscboxService(string webhookUrl, string dbPath)
+    public DiscboxService(string webhookUrl, string dbPath, bool encrypt = false)
     {
         try
         {
-            System.Diagnostics.Debug.WriteLine($"[DiscBox] Init: webhook={webhookUrl} db={dbPath}");
-            _ctx = DiscboxNative.discbox_init(webhookUrl, dbPath, IntPtr.Zero);
+            System.Diagnostics.Debug.WriteLine($"[DiscBox] Init: webhook={webhookUrl} db={dbPath} encrypt={encrypt}");
+            _ctx = DiscboxNative.discbox_init_with_options(webhookUrl, dbPath, encrypt ? 1 : 0);
             System.Diagnostics.Debug.WriteLine($"[DiscBox] ctx={_ctx} IsAvailable={IsAvailable}");
         }
         catch (Exception ex)
@@ -141,6 +141,12 @@ public class DiscboxService : IDisposable
 
         return DiscboxNative.discbox_download(
             _ctx, virtualPath, localPath, cb, IntPtr.Zero) == 0;
+    }
+
+    public bool BackupDatabase(string localPath)
+    {
+        if (!IsAvailable) return false;
+        return DiscboxNative.discbox_backup_database(_ctx, localPath) == 0;
     }
 
     // ── Utilities ─────────────────────────────────────────────

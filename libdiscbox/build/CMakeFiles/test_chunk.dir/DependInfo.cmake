@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "C:/Users/jpmmm/Downloads/libdiscbox/tests/test_chunk.c" "CMakeFiles/test_chunk.dir/tests/test_chunk.c.obj" "gcc" "CMakeFiles/test_chunk.dir/tests/test_chunk.c.obj.d"
+  "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/tests/test_chunk.c" "CMakeFiles/test_chunk.dir/tests/test_chunk.c.obj" "gcc" "CMakeFiles/test_chunk.dir/tests/test_chunk.c.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

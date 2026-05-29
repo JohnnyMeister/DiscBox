@@ -1,6 +1,6 @@
 CMakeFiles/discbox_shared.dir/src/discbox.c.obj: \
- C:\Users\jpmmm\Downloads\libdiscbox\src\discbox.c \
- C:/Users/jpmmm/Downloads/libdiscbox/include/discbox.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discbox.c \
+ C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/include/discbox.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stddef.h \
  C:/msys64/mingw64/include/stddef.h C:/msys64/mingw64/include/crtdefs.h \
  C:/msys64/mingw64/include/corecrt.h C:/msys64/mingw64/include/_mingw.h \
@@ -14,15 +14,16 @@ CMakeFiles/discbox_shared.dir/src/discbox.c.obj: \
  C:/msys64/mingw64/include/_timeval.h \
  C:/msys64/mingw64/include/pthread_time.h \
  C:/msys64/mingw64/include/pthread_compat.h \
- C:\Users\jpmmm\Downloads\libdiscbox\src\chunk.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\chunk.h \
  C:/msys64/mingw64/include/stdio.h \
  C:/msys64/mingw64/include/corecrt_stdio_config.h \
  C:/msys64/mingw64/include/_mingw_off_t.h \
  C:/msys64/mingw64/include/swprintf.inl \
  C:/msys64/mingw64/include/sec_api/stdio_s.h \
- C:\Users\jpmmm\Downloads\libdiscbox\src\db.h \
- C:\Users\jpmmm\Downloads\libdiscbox\src\discord.h \
- C:\Users\jpmmm\Downloads\libdiscbox\src\ratelimit.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\db.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discord.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\ratelimit.h \
+ C:\Users\jpmmm\Desktop\cenas\DiscBox\libdiscbox\src\discbox_crypto.h \
  C:/msys64/mingw64/include/windows.h \
  C:/msys64/mingw64/include/sdkddkver.h C:/msys64/mingw64/include/excpt.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdarg.h \

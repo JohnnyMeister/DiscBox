@@ -12,9 +12,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/* Default chunk size: 10 MB */
-#define CHUNK_SIZE_DEFAULT  (10ULL * 1024 * 1024)
-#define CHUNK_SIZE_MAX      (10ULL * 1024 * 1024)
+/* Keep chunks safely below Discord's webhook request limit.
+ * Multipart overhead plus encryption metadata can push a 10 MiB chunk over
+ * the limit, so use 8 MiB for reliable uploads of large files/videos.
+ */
+#define CHUNK_SIZE_DEFAULT  (8ULL * 1024 * 1024)
+#define CHUNK_SIZE_MAX      (8ULL * 1024 * 1024)
 
 /**
  * A single in-memory chunk ready to be uploaded.

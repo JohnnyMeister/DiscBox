@@ -6,10 +6,10 @@ namespace DiscBox.ViewModels;
 
 public partial class TransferProgressViewModel : ObservableObject
 {
-    [ObservableProperty] private string _titleText = "A preparar...";
+    [ObservableProperty] private string _titleText = "Preparing...";
     [ObservableProperty] private string _itemName = string.Empty;
     [ObservableProperty] private int _percent = 0;
-    [ObservableProperty] private string _statusText = "A preparar...";
+    [ObservableProperty] private string _statusText = "Preparing...";
     [ObservableProperty] private string _detailText = string.Empty;
     [ObservableProperty] private string _speedText = string.Empty;
     [ObservableProperty] private string _etaText = string.Empty;
@@ -28,8 +28,8 @@ public partial class TransferProgressViewModel : ObservableObject
     private void Cancel()
     {
         Cancelled = true;
-        StatusText = "A cancelar...";
-        DetailText = "A operacao vai parar assim que o item atual terminar.";
+        StatusText = "Cancelling...";
+        DetailText = "The operation will stop after the current item finishes.";
     }
 
     public void Start(string title, int totalItems, bool isCut)
@@ -43,7 +43,7 @@ public partial class TransferProgressViewModel : ObservableObject
         Percent = 0;
         IsDone = false;
         IsIndeterminate = _totalItems <= 0;
-        StatusText = _totalItems > 0 ? $"0/{_totalItems} item(ns)" : "A preparar lista...";
+        StatusText = _totalItems > 0 ? $"0/{_totalItems} item(s)" : "Preparing list...";
         DetailText = string.Empty;
         SpeedText = string.Empty;
         EtaText = string.Empty;
@@ -70,7 +70,7 @@ public partial class TransferProgressViewModel : ObservableObject
         if (bytesPerSec > 0 && total > done)
         {
             var remaining = (total - done) / bytesPerSec;
-            EtaText = $"~{FormatTime(remaining)} restantes";
+            EtaText = $"~{FormatTime(remaining)} remaining";
         }
         else
         {
@@ -78,24 +78,24 @@ public partial class TransferProgressViewModel : ObservableObject
         }
 
         StatusText = $"{phase}: {FormatBytes(done)} / {FormatBytes(total)}";
-        DetailText = $"{_doneItems}/{_totalItems} item(ns) concluidos";
+        DetailText = $"{_doneItems}/{_totalItems} item(s) completed";
     }
 
     public void CompleteItem()
     {
         _doneItems++;
         UpdateItemProgress(0);
-        StatusText = $"{_doneItems}/{_totalItems} item(ns)";
+        StatusText = $"{_doneItems}/{_totalItems} item(s)";
         DetailText = RemainingItemsText();
 
         var elapsed = Math.Max((DateTime.Now - _startedAt).TotalSeconds, 0.1);
         var itemsPerSec = _doneItems / elapsed;
-        SpeedText = itemsPerSec > 0 ? $"{itemsPerSec:F1} itens/s" : string.Empty;
+        SpeedText = itemsPerSec > 0 ? $"{itemsPerSec:F1} items/s" : string.Empty;
 
         if (itemsPerSec > 0 && _totalItems > _doneItems)
         {
             var remaining = (_totalItems - _doneItems) / itemsPerSec;
-            EtaText = $"~{FormatTime(remaining)} restantes";
+            EtaText = $"~{FormatTime(remaining)} remaining";
         }
         else
         {
@@ -108,7 +108,7 @@ public partial class TransferProgressViewModel : ObservableObject
         Percent = 100;
         IsIndeterminate = false;
         StatusText = message;
-        DetailText = "Operacao terminada.";
+        DetailText = "Operation finished.";
         SpeedText = string.Empty;
         EtaText = string.Empty;
         IsDone = true;
@@ -117,7 +117,7 @@ public partial class TransferProgressViewModel : ObservableObject
     public void Error(string message)
     {
         IsIndeterminate = false;
-        StatusText = $"Erro: {message}";
+        StatusText = $"Error: {message}";
         DetailText = string.Empty;
         SpeedText = string.Empty;
         EtaText = string.Empty;
@@ -139,7 +139,7 @@ public partial class TransferProgressViewModel : ObservableObject
     private string RemainingItemsText()
     {
         var remaining = Math.Max(_totalItems - _doneItems, 0);
-        return remaining == 1 ? "1 item restante" : $"{remaining} itens restantes";
+        return remaining == 1 ? "1 item remaining" : $"{remaining} items remaining";
     }
 
     private static string FormatBytes(long bytes) => bytes switch

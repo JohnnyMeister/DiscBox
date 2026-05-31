@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.NewFolderDialog"
-        Title="Nova Pasta"
+        Title="New Folder"
         Width="400" Height="220"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -12,7 +12,7 @@
   <Grid RowDefinitions="30,*">
     <!-- TitleBar background -->
     <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
-      <TextBlock Text="Nova Pasta" 
+      <TextBlock Text="New Folder" 
                  Foreground="#8E9297" FontSize="12" 
                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
@@ -21,21 +21,21 @@
       <StackPanel Spacing="16">
         <StackPanel Orientation="Horizontal" Spacing="10">
           <material:MaterialIcon Kind="FolderPlus" Foreground="#00E5FF" Width="24" Height="24"/>
-          <TextBlock Text="Nome da pasta:"
+          <TextBlock Text="Folder name:"
                      Foreground="#E3E5E8" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
         </StackPanel>
 
         <TextBox x:Name="FolderNameBox"
-                 Watermark="ex: Fotos, Videos, Documentos..."
+                 Watermark="e.g. Photos, Videos, Documents..."
                  Background="#0B0F19" Foreground="#E3E5E8"
                  BorderBrush="#2A324A" CornerRadius="8"
                  Padding="16,12" FontSize="14"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,8,0,0">
-          <Button Content="Cancelar" Click="OnCancel"
+          <Button Content="Cancel" Click="OnCancel"
                   Background="#2A324A" Foreground="#E3E5E8"
                   CornerRadius="8" Padding="20,10" FontWeight="SemiBold"/>
-          <Button Content="Criar" Click="OnCreate"
+          <Button Content="Create" Click="OnCreate"
                   Background="#6A0DAD" Foreground="White"
                   CornerRadius="8" Padding="20,10" FontWeight="Bold"/>
         </StackPanel>

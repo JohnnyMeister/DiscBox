@@ -8,7 +8,7 @@ public partial class DeleteProgressViewModel : ObservableObject
 {
     [ObservableProperty] private string _fileName = string.Empty;
     [ObservableProperty] private int _percent = 0;
-    [ObservableProperty] private string _statusText = "A preparar...";
+    [ObservableProperty] private string _statusText = "Preparing...";
     [ObservableProperty] private string _detailText = string.Empty;
     [ObservableProperty] private string _speedText = string.Empty;
     [ObservableProperty] private string _etaText = string.Empty;
@@ -24,7 +24,7 @@ public partial class DeleteProgressViewModel : ObservableObject
     private void Cancel()
     {
         Cancelled = true;
-        StatusText = "A cancelar...";
+        StatusText = "Cancelling...";
         CancelRequested?.Invoke();
     }
 
@@ -32,8 +32,8 @@ public partial class DeleteProgressViewModel : ObservableObject
     {
         FileName = fileName;
         Percent = 0;
-        StatusText = "A iniciar helper de delete...";
-        DetailText = "A preparar a lista de chunks no Discord.";
+        StatusText = "Starting delete helper...";
+        DetailText = "Preparing the Discord chunk list.";
         SpeedText = string.Empty;
         EtaText = string.Empty;
         IsDone = false;
@@ -47,8 +47,8 @@ public partial class DeleteProgressViewModel : ObservableObject
         Percent = total > 0 ? (int)(done * 100 / total) : 0;
 
         StatusText = total > 0
-            ? $"A apagar chunks {done}/{total}"
-            : "A apagar no Discord...";
+            ? $"Deleting chunks {done}/{total}"
+            : "Deleting on Discord...";
 
         var name = currentPath;
         var slash = currentPath.LastIndexOf('/');
@@ -56,8 +56,8 @@ public partial class DeleteProgressViewModel : ObservableObject
             name = currentPath[(slash + 1)..];
 
         DetailText = string.IsNullOrWhiteSpace(name)
-            ? "A remover mensagens e metadados."
-            : $"Atual: {name}";
+            ? "Removing messages and metadata."
+            : $"Current: {name}";
 
         var elapsed = Math.Max((DateTime.Now - _startTime).TotalSeconds, 0.1);
         var itemsPerSec = done / elapsed;
@@ -68,7 +68,7 @@ public partial class DeleteProgressViewModel : ObservableObject
         if (itemsPerSec > 0 && total > done)
         {
             var remaining = (total - done) / itemsPerSec;
-            EtaText = $"~{FormatTime(remaining)} restantes";
+            EtaText = $"~{FormatTime(remaining)} remaining";
         }
         else
         {
@@ -81,8 +81,8 @@ public partial class DeleteProgressViewModel : ObservableObject
         Percent = 100;
         IsIndeterminate = false;
         var elapsed = (DateTime.Now - _startTime).TotalSeconds;
-        StatusText = $"Apagado em {FormatTime(elapsed)}";
-        DetailText = "Discord e base de dados atualizados.";
+        StatusText = $"Deleted in {FormatTime(elapsed)}";
+        DetailText = "Discord and database updated.";
         SpeedText = string.Empty;
         EtaText = string.Empty;
         IsDone = true;
@@ -91,7 +91,7 @@ public partial class DeleteProgressViewModel : ObservableObject
     public void Error(string message)
     {
         IsIndeterminate = false;
-        StatusText = $"Erro: {message}";
+        StatusText = $"Error: {message}";
         DetailText = string.Empty;
         SpeedText = string.Empty;
         EtaText = string.Empty;

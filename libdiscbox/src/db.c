@@ -417,6 +417,36 @@ int db_delete_tree(db_ctx_t *ctx, const char *virtual_path) {
     return 0;
 }
 
+int db_delete_empty_folders(db_ctx_t *ctx, int *out_deleted_count) {
+    if (!ctx) return -1;
+
+    int total = 0;
+    while (1) {
+        const char *sql =
+            "DELETE FROM entries "
+            "WHERE type = 1 "
+            "AND NOT EXISTS (SELECT 1 FROM entries child WHERE child.parent_id = entries.id);";
+
+        char *errmsg = NULL;
+        int rc = sqlite3_exec(ctx->db, sql, NULL, NULL, &errmsg);
+        if (rc != SQLITE_OK) {
+            set_error(ctx, "delete empty folders failed: %s",
+                      errmsg ? errmsg : sqlite3_errmsg(ctx->db));
+            sqlite3_free(errmsg);
+            return -1;
+        }
+
+        int changed = sqlite3_changes(ctx->db);
+        if (changed <= 0)
+            break;
+        total += changed;
+    }
+
+    if (out_deleted_count)
+        *out_deleted_count = total;
+    return 0;
+}
+
 int db_get_all_files_under(
     db_ctx_t    *ctx,
     const char  *folder_path,

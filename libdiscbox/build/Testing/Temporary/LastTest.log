@@ -1,0 +1,63 @@
+Start testing: May 31 00:52 Hora de Verão de GMT
+----------------------------------------------------------
+1/2 Testing: chunk
+1/2 Test: chunk
+Command: "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/build/test_chunk.exe"
+Directory: C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/build
+"chunk" start time: May 31 00:52 Hora de Verão de GMT
+Output:
+----------------------------------------------------------
+=== libdiscbox chunk tests ===
+
+  chunk_count_for_size                    PASS
+  empty file (0 bytes)                    PASS
+  tiny file (< 1 chunk)                   PASS
+  exact 1 chunk boundary                  PASS
+  1 chunk + 1 byte                        PASS
+  multiple chunks (3 full)                PASS
+  multiple chunks + remainder             PASS
+  1 MB file, 256KB chunks                 PASS
+  5 MB file, 2MB chunks                   PASS
+
+All tests PASSED âœ“
+<end of output>
+Test time =   0.10 sec
+----------------------------------------------------------
+Test Passed.
+"chunk" end time: May 31 00:52 Hora de Verão de GMT
+"chunk" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/2 Testing: db
+2/2 Test: db
+Command: "C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/build/test_db.exe"
+Directory: C:/Users/jpmmm/Desktop/cenas/DiscBox/libdiscbox/build
+"db" start time: May 31 00:52 Hora de Verão de GMT
+Output:
+----------------------------------------------------------
+=== libdiscbox db tests ===
+
+  db_open (in-memory)                     PASS
+  db_insert folder                        PASS
+  db_insert file                          PASS
+  db_get_by_path                          PASS
+  db_list_children                        PASS
+  db_update                               PASS
+  db_total_size                           PASS
+  db_delete_tree recursive                [db] path not found: /Photos/Vacation/nested.txt
+[db] path not found: /Photos/Vacation/Empty
+PASS
+  db_delete                               [db] path not found: /Photos/cat_renamed.jpg
+PASS
+  db_close                                PASS
+
+All tests PASSED âœ“
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"db" end time: May 31 00:52 Hora de Verão de GMT
+"db" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: May 31 00:52 Hora de Verão de GMT

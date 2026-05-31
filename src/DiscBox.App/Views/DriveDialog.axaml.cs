@@ -28,7 +28,7 @@ public partial class DriveDialog : Window
 
         if (!ConfigService.IsValidWebhookUrl(webhook ?? string.Empty))
         {
-            ShowError("Introduz um webhook valido do Discord.");
+            ShowError("Enter a valid Discord webhook.");
             return;
         }
 

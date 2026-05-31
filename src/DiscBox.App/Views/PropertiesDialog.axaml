@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.PropertiesDialog"
-        Title="Propriedades"
+        Title="Properties"
         Width="440" Height="360"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -12,7 +12,7 @@
   <Grid RowDefinitions="30,*">
     <!-- TitleBar background -->
     <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
-      <TextBlock Text="Propriedades" 
+      <TextBlock Text="Properties" 
                  Foreground="#8E9297" FontSize="12" 
                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
@@ -27,23 +27,23 @@
         <Border Height="1" Background="#2A324A"/>
         
         <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ShowGridLines="False">
-          <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold"/>
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="Type:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold"/>
           <TextBlock x:Name="TypeText" Grid.Row="0" Grid.Column="1" Foreground="#00E5FF" FontSize="13"/>
           
-          <TextBlock Grid.Row="1" Grid.Column="0" Text="Tamanho:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="Size:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
           <TextBlock x:Name="SizeText" Grid.Row="1" Grid.Column="1" Foreground="#E3E5E8" FontSize="13" Margin="0,12,0,0"/>
           
-          <TextBlock Grid.Row="2" Grid.Column="0" Text="Caminho:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="Path:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
           <TextBlock x:Name="PathText" Grid.Row="2" Grid.Column="1" Foreground="#E3E5E8" FontSize="13" Margin="0,12,0,0" TextWrapping="Wrap"/>
           
-          <TextBlock Grid.Row="3" Grid.Column="0" Text="Criado em:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
+          <TextBlock Grid.Row="3" Grid.Column="0" Text="Created:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
           <TextBlock x:Name="CreatedText" Grid.Row="3" Grid.Column="1" Foreground="#E3E5E8" FontSize="13" Margin="0,12,0,0"/>
           
-          <TextBlock Grid.Row="4" Grid.Column="0" Text="Encriptado:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
+          <TextBlock Grid.Row="4" Grid.Column="0" Text="Encrypted:" Foreground="#8E9297" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,0"/>
           <TextBlock x:Name="EncryptedText" Grid.Row="4" Grid.Column="1" Foreground="#E3E5E8" FontSize="13" Margin="0,12,0,0"/>
         </Grid>
         
-        <Button Content="Fechar" Click="OnClose" HorizontalAlignment="Right"
+        <Button Content="Close" Click="OnClose" HorizontalAlignment="Right"
                 Background="#2A324A" Foreground="#E3E5E8"
                 CornerRadius="8" Padding="20,10" FontWeight="SemiBold" Margin="0,12,0,0"/>
       </StackPanel>

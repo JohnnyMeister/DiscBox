@@ -4,13 +4,13 @@ using System.Runtime.InteropServices;
 namespace DiscBox.Services;
 
 /// <summary>
-/// P/Invoke declarations — mapeia diretamente as funções do libdiscbox.dll
+/// P/Invoke declarations that map directly to libdiscbox.dll functions.
 /// </summary>
 internal static class DiscboxNative
 {
     const string Lib = "libdiscbox";
 
-    // ── Init / Free ───────────────────────────────────────────
+    // Init / Free.
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern IntPtr discbox_init(
         [MarshalAs(UnmanagedType.LPStr)] string webhook_url, 
@@ -29,7 +29,7 @@ internal static class DiscboxNative
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr discbox_last_error(IntPtr ctx);
 
-    // ── Virtual FS ────────────────────────────────────────────
+    // Virtual FS.
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     public static extern int discbox_mkdir(IntPtr ctx, string virtual_path);
 
@@ -67,7 +67,7 @@ internal static class DiscboxNative
         ProgressCallback? progress_cb,
         IntPtr userdata);
 
-    // ── Transfer ──────────────────────────────────────────────
+    // Transfer.
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern int discbox_upload(
         IntPtr ctx, 
@@ -87,7 +87,15 @@ internal static class DiscboxNative
         IntPtr ctx,
         [MarshalAs(UnmanagedType.LPStr)] string local_path);
 
-    // ── Utilities ─────────────────────────────────────────────
+    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int discbox_sync_remote_state(
+        IntPtr ctx,
+        int remove_empty_folders,
+        out int checked_files,
+        out int removed_files,
+        out int removed_folders);
+
+    // Utilities.
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     public static extern int discbox_validate_webhook(string webhook_url);
 
@@ -97,7 +105,7 @@ internal static class DiscboxNative
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr discbox_strerror(int err);
 
-    // ── Structs (must match C layout exactly) ─────────────────
+    // Structs (must match C layout exactly).
     [StructLayout(LayoutKind.Sequential)]
     public struct NativeEntry
     {

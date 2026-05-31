@@ -34,7 +34,7 @@ public class DisboxMigrationService
         var hash = HashWebhook(webhookUrl);
         var url = $"https://disbox-server.fly.dev/files/get/{hash}";
 
-        progress?.Report("A ligar ao servidor Disbox...");
+        progress?.Report("Connecting to Disbox server...");
 
         using var http = new HttpClient();
         http.Timeout = TimeSpan.FromSeconds(30);
@@ -64,8 +64,8 @@ public class DisboxMigrationService
 
             if (type == "directory")
             {
-                progress?.Report($"Pasta: {virtualPath}");
-                _discbox.Mkdir(virtualPath); // ignora se já existe
+                progress?.Report($"Folder: {virtualPath}");
+                _discbox.Mkdir(virtualPath); // Ignore if it already exists.
                 folders++;
 
                 var children = item["children"];
@@ -81,12 +81,12 @@ public class DisboxMigrationService
                 var size = item["size"]?.GetValue<long>() ?? 0;
                 var content = item["content"]?.GetValue<string>() ?? "[]";
 
-                progress?.Report($"Ficheiro: {name}");
+                progress?.Report($"File: {name}");
                 _discbox.ImportFile(virtualPath, name, size, content);
                 files++;
             }
 
-            await Task.Delay(1); // yield para não bloquear a UI
+            await Task.Delay(1); // Yield so the UI stays responsive.
         }
 
         return (folders, files);

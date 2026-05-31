@@ -49,7 +49,7 @@ public partial class App : Application
             }
 
 #if DEBUG
-            // Avalonia DevTools — press F12 while the app is running
+            // Avalonia DevTools - press F12 while the app is running.
             // Lets you inspect any element, see styles, properties and the visual tree
             if (desktop.MainWindow is not null)
                 desktop.MainWindow.AttachDevTools();

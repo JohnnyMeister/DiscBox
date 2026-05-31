@@ -55,5 +55,8 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [C:/Users/jpmmm/Desktop/cenas/DiscBox/src/DiscBox.App/Views/TransferProgressWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[C:/Users/jpmmm/Desktop/cenas/DiscBox/src/DiscBox.App/Views/UpdateDialog.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [C:/Users/jpmmm/Desktop/cenas/DiscBox/src/DiscBox.App/Views/UploadProgressWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

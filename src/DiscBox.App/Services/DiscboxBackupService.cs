@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -22,13 +24,13 @@ public static class DiscboxBackupService
     public static async Task<string> UploadAsync(DiscboxService discbox, ConfigService.DriveConfig drive)
     {
         if (!discbox.IsAvailable)
-            throw new InvalidOperationException("DiscBox nao esta disponivel.");
+            throw new InvalidOperationException("DiscBox is not available.");
 
         var tempDbPath = Path.Combine(Path.GetTempPath(), $"discbox-backup-{Guid.NewGuid():N}.sqlite");
         try
         {
             if (!discbox.BackupDatabase(tempDbPath))
-                throw new InvalidOperationException(discbox.LastError() ?? "falha ao criar backup local");
+                throw new InvalidOperationException(discbox.LastError() ?? "failed to create local backup");
 
             var sqliteBytes = await File.ReadAllBytesAsync(tempDbPath);
             var encrypted = EncryptBackup(sqliteBytes, drive.WebhookUrl);
@@ -58,13 +60,32 @@ public static class DiscboxBackupService
     public static async Task<RemoteBackupDownload?> TryDownloadAsync(ConfigService.DriveConfig drive)
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
-        var messageId = !string.IsNullOrWhiteSpace(drive.BackupMessageId)
-            ? drive.BackupMessageId
-            : await TryReadBackupMessageIdAsync(http, drive.WebhookUrl);
+        var messageIds = new List<string>();
+        if (!string.IsNullOrWhiteSpace(drive.BackupMessageId))
+            messageIds.Add(drive.BackupMessageId);
 
-        if (string.IsNullOrWhiteSpace(messageId))
-            return null;
+        var discoveredMessageId = await TryReadBackupMessageIdAsync(http, drive.WebhookUrl);
+        if (!string.IsNullOrWhiteSpace(discoveredMessageId) &&
+            !messageIds.Contains(discoveredMessageId, StringComparer.Ordinal))
+        {
+            messageIds.Add(discoveredMessageId);
+        }
 
+        foreach (var messageId in messageIds)
+        {
+            var backup = await TryDownloadMessageAsync(http, drive, messageId);
+            if (backup is not null)
+                return backup;
+        }
+
+        return null;
+    }
+
+    private static async Task<RemoteBackupDownload?> TryDownloadMessageAsync(
+        HttpClient http,
+        ConfigService.DriveConfig drive,
+        string messageId)
+    {
         var messageUrl = BuildMessageUrl(drive.WebhookUrl, messageId);
         using var messageResponse = await http.GetAsync(messageUrl);
         if (!messageResponse.IsSuccessStatusCode)
@@ -78,7 +99,7 @@ public static class DiscboxBackupService
         var encrypted = await http.GetByteArrayAsync(attachmentUrl);
         var sqliteBytes = DecryptBackup(encrypted, drive.WebhookUrl);
         if (!LooksLikeSqlite(sqliteBytes))
-            throw new InvalidOperationException("backup remoto invalido");
+            throw new InvalidOperationException("invalid remote backup");
 
         var localPath = Path.Combine(Path.GetTempPath(), $"discbox-restore-{Guid.NewGuid():N}.sqlite");
         await File.WriteAllBytesAsync(localPath, sqliteBytes);
@@ -94,7 +115,7 @@ public static class DiscboxBackupService
         using var response = await http.PostAsync(BuildWaitUrl(webhookUrl), form);
         var body = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
-            throw new InvalidOperationException($"backup remoto falhou: HTTP {(int)response.StatusCode} - {body}");
+            throw new InvalidOperationException($"remote backup failed: HTTP {(int)response.StatusCode} - {body}");
 
         using var json = JsonDocument.Parse(body);
         if (json.RootElement.TryGetProperty("id", out var id) &&
@@ -103,7 +124,7 @@ public static class DiscboxBackupService
             return id.GetString() ?? string.Empty;
         }
 
-        throw new InvalidOperationException("resposta de backup sem message id");
+        throw new InvalidOperationException("backup response did not include a message id");
     }
 
     private static async Task<string> TryReadBackupMessageIdAsync(HttpClient http, string webhookUrl)
@@ -179,12 +200,12 @@ public static class DiscboxBackupService
     private static byte[] DecryptBackup(byte[] encrypted, string webhookUrl)
     {
         if (encrypted.Length < BackupMagic.Length + 12 + 16)
-            throw new InvalidOperationException("backup remoto demasiado pequeno");
+            throw new InvalidOperationException("remote backup is too small");
 
         for (var i = 0; i < BackupMagic.Length; i++)
         {
             if (encrypted[i] != BackupMagic[i])
-                throw new InvalidOperationException("backup remoto nao e um backup DiscBox");
+                throw new InvalidOperationException("remote backup is not a DiscBox backup");
         }
 
         var key = SHA256.HashData(Encoding.UTF8.GetBytes(webhookUrl));

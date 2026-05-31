@@ -4,7 +4,7 @@
         xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.TransferProgressWindow"
         x:DataType="vm:TransferProgressViewModel"
-        Title="DiscBox - Transferencia"
+        Title="DiscBox - Transfer"
         Width="500" Height="290"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -69,7 +69,7 @@
           </StackPanel>
         </Grid>
 
-        <Button Content="Cancelar"
+        <Button Content="Cancel"
                 Command="{Binding CancelCommand}"
                 IsEnabled="{Binding !IsDone}"
                 HorizontalAlignment="Right"

@@ -12,6 +12,7 @@ public enum EntryType { File, Folder }
 public class FileEntry : ObservableObject
 {
     private bool _isUiSelected;
+    private bool _isQuickAccess;
 
     public long   Id            { get; set; }
     public string Name         { get; set; } = string.Empty;
@@ -30,7 +31,13 @@ public class FileEntry : ObservableObject
         set => SetProperty(ref _isUiSelected, value);
     }
 
-    // ── Computed helpers ──────────────────────────────────────
+    public bool IsQuickAccess
+    {
+        get => _isQuickAccess;
+        set => SetProperty(ref _isQuickAccess, value);
+    }
+
+    // Computed helpers.
 
     public bool IsFolder => Type == EntryType.Folder;
     public bool IsFile   => Type == EntryType.File;

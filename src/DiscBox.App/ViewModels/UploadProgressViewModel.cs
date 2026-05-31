@@ -8,7 +8,7 @@ public partial class UploadProgressViewModel : ObservableObject
 {
     [ObservableProperty] private string _fileName = string.Empty;
     [ObservableProperty] private int _percent = 0;
-    [ObservableProperty] private string _statusText = "A preparar...";
+    [ObservableProperty] private string _statusText = "Preparing...";
     [ObservableProperty] private string _detailText = string.Empty;
     [ObservableProperty] private string _speedText = string.Empty;
     [ObservableProperty] private string _etaText = string.Empty;
@@ -22,7 +22,7 @@ public partial class UploadProgressViewModel : ObservableObject
     private void Cancel()
     {
         Cancelled = true;
-        StatusText = "A cancelar...";
+        StatusText = "Cancelling...";
     }
 
     public void Update(long done, long total, int chunkIndex, int chunkCount)
@@ -34,8 +34,8 @@ public partial class UploadProgressViewModel : ObservableObject
             var retrieved = Math.Max(0, done);
             var totalUrls = Math.Max(0, chunkCount);
             Percent = totalUrls > 0 ? (int)(retrieved * 100 / totalUrls) : 0;
-            StatusText = $"A recuperar URLs {retrieved}/{totalUrls}";
-            DetailText = "A pedir links temporarios ao Discord antes de descarregar os chunks.";
+            StatusText = $"Fetching URLs {retrieved}/{totalUrls}";
+            DetailText = "Requesting temporary Discord links before downloading chunks.";
             SpeedText = totalUrls > 0 ? $"{retrieved}/{totalUrls} URLs" : string.Empty;
             EtaText = string.Empty;
             return;
@@ -53,7 +53,7 @@ public partial class UploadProgressViewModel : ObservableObject
         if (bytesPerSec > 0 && total > done)
         {
             double remainingSec = (total - done) / bytesPerSec;
-            EtaText = $"~{FormatTime(remainingSec)} restantes";
+            EtaText = $"~{FormatTime(remainingSec)} remaining";
         }
         else
         {
@@ -64,7 +64,7 @@ public partial class UploadProgressViewModel : ObservableObject
         StatusText = $"Chunk {currentChunk}/{chunkCount} - " +
                      $"{FormatBytes(done)} / {FormatBytes(total)}";
         DetailText = chunkCount > 0
-            ? $"{chunkCount} chunk(s) no total; {Math.Min(done, total):N0} bytes processados"
+            ? $"{chunkCount} chunk(s) total; {Math.Min(done, total):N0} bytes processed"
             : string.Empty;
     }
 
@@ -72,7 +72,7 @@ public partial class UploadProgressViewModel : ObservableObject
     {
         Percent = 100;
         var elapsed = (DateTime.Now - _startTime).TotalSeconds;
-        StatusText = $"Concluido em {FormatTime(elapsed)}";
+        StatusText = $"Completed in {FormatTime(elapsed)}";
         DetailText = string.Empty;
         SpeedText = string.Empty;
         EtaText = string.Empty;
@@ -81,7 +81,7 @@ public partial class UploadProgressViewModel : ObservableObject
 
     public void Error(string message)
     {
-        StatusText = $"Erro: {message}";
+        StatusText = $"Error: {message}";
         DetailText = string.Empty;
         SpeedText = string.Empty;
         EtaText = string.Empty;

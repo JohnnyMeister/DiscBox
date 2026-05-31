@@ -4,7 +4,7 @@
         xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.UploadProgressWindow"
         x:DataType="vm:UploadProgressViewModel"
-        Title="DiscBox — Upload"
+        Title="DiscBox - Upload"
         Width="500" Height="290"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -14,7 +14,7 @@
   <Grid RowDefinitions="30,*">
     <!-- TitleBar background -->
     <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
-      <TextBlock Text="A enviar ficheiro..." 
+      <TextBlock Text="Uploading file..." 
                  Foreground="#8E9297" FontSize="12" 
                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
@@ -60,7 +60,7 @@
           </StackPanel>
         </Grid>
 
-        <Button Content="Cancelar"
+        <Button Content="Cancel"
                 Command="{Binding CancelCommand}"
                 IsEnabled="{Binding !IsDone}"
                 HorizontalAlignment="Right"

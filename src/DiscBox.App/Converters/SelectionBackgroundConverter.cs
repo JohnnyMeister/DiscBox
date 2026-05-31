@@ -7,7 +7,7 @@ namespace DiscBox.Converters;
 
 public class SelectionBackgroundConverter : IValueConverter
 {
-    private static readonly IBrush Selected = new SolidColorBrush(Color.Parse("#123947"));
+    private static readonly IBrush Selected = new SolidColorBrush(Color.Parse("#1A2033"));
     private static readonly IBrush Normal = Brushes.Transparent;
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)

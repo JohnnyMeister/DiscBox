@@ -300,6 +300,17 @@ static int is_same_or_child_path(const char *path, const char *possible_parent) 
           path[parent_len] == '/');
 }
 
+static int is_valid_entry_path(const char *path) {
+  if (!path || path[0] != '/' || path[1] == '\0')
+    return 0;
+
+  if (strstr(path, "//") != NULL)
+    return 0;
+
+  size_t len = strlen(path);
+  return len == 1 || path[len - 1] != '/';
+}
+
 static int is_safe_filename_char(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
          (c >= '0' && c <= '9') || c == '.' || c == '_' || c == '-';
@@ -346,6 +357,9 @@ static int64_t ensure_parent(discbox_ctx_t *ctx, const char *virtual_path) {
 
   /* Build parent path */
   size_t parent_len = (size_t)(last_slash - virtual_path);
+  if (parent_len == 1)
+    return -1;
+
   char *parent_path = (char *)malloc(parent_len + 1);
   if (!parent_path)
     return -2; /* error */
@@ -447,7 +461,7 @@ const char *discbox_last_error(discbox_ctx_t *ctx) {
 /* ── Virtual FS ──────────────────────────────────────────────── */
 
 discbox_err_t discbox_mkdir(discbox_ctx_t *ctx, const char *virtual_path) {
-  if (!ctx || !virtual_path || virtual_path[0] != '/')
+  if (!ctx || !is_valid_entry_path(virtual_path))
     return DISCBOX_ERR_ARGS;
 
   /* Check if already exists */
@@ -571,7 +585,7 @@ void discbox_free_entry(discbox_entry_t *entry) {
 
 discbox_err_t discbox_rename(discbox_ctx_t *ctx, const char *old_path,
                              const char *new_path) {
-  if (!ctx || !old_path || !new_path)
+  if (!ctx || !is_valid_entry_path(old_path) || !is_valid_entry_path(new_path))
     return DISCBOX_ERR_ARGS;
 
   db_entry_t entry = {0};
@@ -700,7 +714,7 @@ discbox_err_t discbox_delete(discbox_ctx_t *ctx, const char *virtual_path) {
 discbox_err_t discbox_import_file(discbox_ctx_t *ctx, const char *virtual_path,
                                   const char *name, int64_t size_bytes,
                                   const char *chunk_message_ids_json) {
-  if (!ctx || !virtual_path || !name || !chunk_message_ids_json)
+  if (!ctx || !is_valid_entry_path(virtual_path) || !name || !chunk_message_ids_json)
     return DISCBOX_ERR_ARGS;
 
   /* Check if already exists */
@@ -741,7 +755,7 @@ discbox_err_t discbox_upload(discbox_ctx_t *ctx, const char *local_path,
                              void *userdata) {
   if (!ctx || !local_path || !virtual_path)
     return DISCBOX_ERR_ARGS;
-  if (virtual_path[0] != '/')
+  if (!is_valid_entry_path(virtual_path))
     return DISCBOX_ERR_ARGS;
 
   db_entry_t existing = {0};
@@ -1213,6 +1227,130 @@ discbox_err_t discbox_backup_database(discbox_ctx_t *ctx,
 }
 
 /* ── Utilities ───────────────────────────────────────────────── */
+
+static int discord_message_exists_for_sync(discbox_ctx_t *ctx,
+                                           const char *message_id) {
+  if (!message_id || !message_id[0])
+    return 0;
+
+  uint8_t *data = NULL;
+  size_t size = 0;
+  if (discord_fetch_message(&ctx->discord, ctx->webhook_url, message_id, &data,
+                            &size) == 0) {
+    free(data);
+    return 1;
+  }
+
+  const char *error = discord_client_last_error(&ctx->discord);
+  if (error && strstr(error, "HTTP 404") != NULL)
+    return 0;
+
+  set_error(ctx, "sync: failed to verify Discord message %s: %s", message_id,
+            error ? error : "unknown error");
+  return -1;
+}
+
+static int file_remote_messages_exist(discbox_ctx_t *ctx,
+                                      const db_entry_t *entry) {
+  if (!entry || entry->type != DB_ENTRY_FILE)
+    return 1;
+
+  if (entry->thumbnail_message_id && entry->thumbnail_message_id[0]) {
+    int exists =
+        discord_message_exists_for_sync(ctx, entry->thumbnail_message_id);
+    if (exists <= 0)
+      return exists;
+  }
+
+  char **message_ids = NULL;
+  int message_count = 0;
+  if (parse_json_string_array(entry->chunk_message_ids, &message_ids,
+                              &message_count) != 0) {
+    set_error(ctx, "sync: invalid chunk message ids for %s",
+              entry->virtual_path);
+    return -1;
+  }
+
+  if (message_count == 0) {
+    free_string_array(message_ids, message_count);
+    return 0;
+  }
+
+  for (int i = 0; i < message_count; i++) {
+    int exists = discord_message_exists_for_sync(ctx, message_ids[i]);
+    if (exists <= 0) {
+      free_string_array(message_ids, message_count);
+      return exists;
+    }
+  }
+
+  free_string_array(message_ids, message_count);
+  return 1;
+}
+
+discbox_err_t discbox_sync_remote_state(discbox_ctx_t *ctx,
+                                        int remove_empty_folders,
+                                        int *checked_files,
+                                        int *removed_files,
+                                        int *removed_folders) {
+  if (!ctx)
+    return DISCBOX_ERR_ARGS;
+
+  if (checked_files)
+    *checked_files = 0;
+  if (removed_files)
+    *removed_files = 0;
+  if (removed_folders)
+    *removed_folders = 0;
+
+  db_entry_t *files = NULL;
+  size_t file_count = 0;
+  if (db_get_all_files_under(&ctx->db, "/", &files, &file_count) != 0) {
+    set_error(ctx, "sync: failed to list local files: %s",
+              db_last_error(&ctx->db));
+    return DISCBOX_ERR_DB;
+  }
+
+  int local_checked = 0;
+  int local_removed_files = 0;
+  for (size_t i = 0; i < file_count; i++) {
+    local_checked++;
+    int exists = file_remote_messages_exist(ctx, &files[i]);
+    if (exists < 0) {
+      db_free_entries(files, file_count);
+      return DISCBOX_ERR_NETWORK;
+    }
+
+    if (exists == 0) {
+      if (db_delete_tree(&ctx->db, files[i].virtual_path) != 0) {
+        set_error(ctx, "sync: failed to remove stale file %s: %s",
+                  files[i].virtual_path, db_last_error(&ctx->db));
+        db_free_entries(files, file_count);
+        return DISCBOX_ERR_DB;
+      }
+      local_removed_files++;
+    }
+  }
+  db_free_entries(files, file_count);
+
+  int local_removed_folders = 0;
+  if (remove_empty_folders) {
+    if (db_delete_empty_folders(&ctx->db, &local_removed_folders) != 0) {
+      set_error(ctx, "sync: failed to remove empty folders: %s",
+                db_last_error(&ctx->db));
+      return DISCBOX_ERR_DB;
+    }
+  }
+
+  if (checked_files)
+    *checked_files = local_checked;
+  if (removed_files)
+    *removed_files = local_removed_files;
+  if (removed_folders)
+    *removed_folders = local_removed_folders;
+
+  return DISCBOX_OK;
+}
 
 discbox_err_t discbox_validate_webhook(const char *webhook_url) {
   if (!webhook_url)

@@ -28,6 +28,9 @@ public class ConfigService
 
         [JsonPropertyName("path")]
         public string Path { get; set; } = string.Empty;
+
+        [JsonPropertyName("is_file")]
+        public bool IsFile { get; set; }
     }
 
     public class DriveConfig

@@ -5,14 +5,17 @@ using System.Runtime.InteropServices;
 
 namespace DiscBox.Services;
 
+public sealed record RemoteSyncResult(int CheckedFiles, int RemovedFiles, int RemovedFolders);
+
 /// <summary>
-/// Wrapper C# amigável em torno do DiscboxNative.
-/// Converte ponteiros nativos em objetos C# e gere o tempo de vida do contexto.
+/// Friendly C# wrapper around DiscboxNative.
+/// Converts native pointers into C# objects and manages the context lifetime.
 /// </summary>
 public class DiscboxService : IDisposable
 {
     private IntPtr _ctx;
     private bool _disposed;
+    private string? _initError;
 
     public bool IsAvailable => _ctx != IntPtr.Zero;
 
@@ -22,16 +25,19 @@ public class DiscboxService : IDisposable
         {
             System.Diagnostics.Debug.WriteLine($"[DiscBox] Init: webhook={webhookUrl} db={dbPath} encrypt={encrypt}");
             _ctx = DiscboxNative.discbox_init_with_options(webhookUrl, dbPath, encrypt ? 1 : 0);
+            if (_ctx == IntPtr.Zero)
+                _initError = "DiscBox native engine did not start. Check the bundled native DLLs and the webhook URL.";
             System.Diagnostics.Debug.WriteLine($"[DiscBox] ctx={_ctx} IsAvailable={IsAvailable}");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[DiscBox] DLL error: {ex.GetType().Name}: {ex.Message}");
+            _initError = $"DiscBox native engine failed to load: {ex.Message}";
             _ctx = IntPtr.Zero;
         }
     }
 
-    // ── Virtual FS ────────────────────────────────────────────
+    // Virtual FS.
 
     public List<FileEntry> List(string virtualPath)
     {
@@ -93,8 +99,8 @@ public class DiscboxService : IDisposable
     }
 
     /// <summary>
-    /// Importa um ficheiro do Disbox directamente para o SQLite local
-    /// sem fazer upload — apenas regista os metadados.
+    /// Imports a Disbox file directly into the local SQLite database.
+    /// It registers metadata without uploading the file again.
     /// </summary>
     public bool ImportFile(string virtualPath, string name, long sizeBytes, string chunkMessageIdsJson)
     {
@@ -103,7 +109,7 @@ public class DiscboxService : IDisposable
             _ctx, virtualPath, name, sizeBytes, chunkMessageIdsJson) == 0;
     }
 
-    // ── Transfer ──────────────────────────────────────────────
+    // Transfer.
 
     public bool Upload(string localPath, string virtualPath,
                        Action<long, long, int, int>? onProgress = null)
@@ -149,7 +155,22 @@ public class DiscboxService : IDisposable
         return DiscboxNative.discbox_backup_database(_ctx, localPath) == 0;
     }
 
-    // ── Utilities ─────────────────────────────────────────────
+    public RemoteSyncResult? SyncRemoteState(bool removeEmptyFolders)
+    {
+        if (!IsAvailable) return null;
+
+        var rc = DiscboxNative.discbox_sync_remote_state(
+            _ctx,
+            removeEmptyFolders ? 1 : 0,
+            out var checkedFiles,
+            out var removedFiles,
+            out var removedFolders);
+        return rc == 0
+            ? new RemoteSyncResult(checkedFiles, removedFiles, removedFolders)
+            : null;
+    }
+
+    // Utilities.
 
     public long TotalSize() => IsAvailable ? DiscboxNative.discbox_total_size(_ctx) : 0;
 
@@ -161,11 +182,11 @@ public class DiscboxService : IDisposable
 
     public string? LastError()
     {
-        if (!IsAvailable) return null;
+        if (!IsAvailable) return _initError;
         return Marshal.PtrToStringAnsi(DiscboxNative.discbox_last_error(_ctx));
     }
 
-    // ── Helpers ───────────────────────────────────────────────
+    // Helpers.
 
     private static FileEntry FromNative(DiscboxNative.NativeEntry n) => new()
     {
@@ -181,7 +202,7 @@ public class DiscboxService : IDisposable
         Encrypted = n.encrypted != 0,
     };
 
-    // ── IDisposable ───────────────────────────────────────────
+    // IDisposable.
 
     public void Dispose()
     {

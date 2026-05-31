@@ -13,7 +13,7 @@ public partial class SetupViewModel : ObservableObject
 
     public event Action? SetupCompleted;
 
-    // ── Bindable properties ───────────────────────────────────
+    // Bindable properties.
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
@@ -37,14 +37,14 @@ public partial class SetupViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSuccess = false;
 
-    // ── Constructor ───────────────────────────────────────────
+    // Constructor.
 
     public SetupViewModel(ConfigService config)
     {
         _config = config;
     }
 
-    // ── Commands ──────────────────────────────────────────────
+    // Commands.
 
     private bool CanSave => ConfigService.IsValidWebhookUrl(WebhookUrl) && !IsValidating;
 
@@ -62,7 +62,7 @@ public partial class SetupViewModel : ObservableObject
 
         if (!valid)
         {
-            StatusMessage = "❌ Invalid webhook URL. Check the URL and try again.";
+            StatusMessage = "Invalid webhook URL. Check the URL and try again.";
             IsError       = true;
             return;
         }
@@ -76,7 +76,7 @@ public partial class SetupViewModel : ObservableObject
             DbPath     = ConfigService.DefaultDbPath
         });
 
-        StatusMessage = "✓ Webhook validated! Opening DiscBox...";
+        StatusMessage = "Webhook validated. Opening DiscBox...";
         IsSuccess     = true;
 
         // Small delay so user sees the success message
@@ -84,7 +84,7 @@ public partial class SetupViewModel : ObservableObject
         SetupCompleted?.Invoke();
     }
 
-    // ── Internal ──────────────────────────────────────────────
+    // Internal helpers.
 
     private static async Task<bool> ValidateWebhookAsync(string url)
     {

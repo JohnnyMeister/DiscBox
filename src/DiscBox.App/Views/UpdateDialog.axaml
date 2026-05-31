@@ -1,0 +1,98 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        x:Class="DiscBox.Views.UpdateDialog"
+        Title="DiscBox update"
+        Width="520" Height="360"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B0F19"
+        ExtendClientAreaToDecorationsHint="True">
+
+  <Grid RowDefinitions="30,*">
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="DiscBox update"
+                 Foreground="#8E9297" FontSize="12"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+
+    <Border Grid.Row="1" Background="#161B29" Padding="28">
+      <StackPanel Spacing="18">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <Border Width="44" Height="44" CornerRadius="12" Background="#0B0F19">
+            <material:MaterialIcon Kind="CloudDownloadOutline"
+                                   Foreground="#00E5FF"
+                                   Width="28" Height="28"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+          </Border>
+          <StackPanel Spacing="4" VerticalAlignment="Center">
+            <TextBlock x:Name="TitleText"
+                       Text="A new DiscBox version is available"
+                       Foreground="#E3E5E8"
+                       FontSize="17"
+                       FontWeight="Bold"/>
+            <TextBlock x:Name="VersionText"
+                       Foreground="#8E9297"
+                       FontSize="12"/>
+          </StackPanel>
+        </StackPanel>
+
+        <Border Background="#0B0F19" BorderBrush="#2A324A" BorderThickness="1"
+                CornerRadius="10" Padding="14,12">
+          <TextBlock x:Name="NotesText"
+                     Foreground="#AEB6C2"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     MaxHeight="74"/>
+        </Border>
+
+        <StackPanel Spacing="8">
+          <TextBlock x:Name="StatusText"
+                     Text="Ready to download the update."
+                     Foreground="#8E9297"
+                     FontSize="12"/>
+          <ProgressBar x:Name="DownloadProgress"
+                       Height="7"
+                       Minimum="0"
+                       Maximum="100"
+                       Value="0"
+                       IsVisible="False"
+                       Foreground="#00E5FF"
+                       Background="#0B0F19"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,8,0,0">
+          <Button x:Name="LaterButton"
+                  Content="Later"
+                  Click="OnLater"
+                  Background="#2A324A"
+                  Foreground="#E3E5E8"
+                  CornerRadius="8"
+                  Padding="18,10"
+                  FontWeight="SemiBold"/>
+          <Button x:Name="ReleaseButton"
+                  Content="Open release"
+                  Click="OnOpenRelease"
+                  Background="#2A324A"
+                  Foreground="#E3E5E8"
+                  CornerRadius="8"
+                  Padding="18,10"
+                  FontWeight="SemiBold"/>
+          <Button x:Name="UpdateButton"
+                  Click="OnUpdate"
+                  Background="#00E5FF"
+                  Foreground="#0B0F19"
+                  CornerRadius="8"
+                  Padding="18,10"
+                  FontWeight="Bold">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <material:MaterialIcon Kind="Download" Width="18" Height="18"/>
+              <TextBlock Text="Update now"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

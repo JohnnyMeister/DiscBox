@@ -5,9 +5,9 @@
         xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.SetupWindow"
         x:DataType="vm:SetupViewModel"
-        Title="DiscBox — Setup"
-        Width="580" Height="720"
-        MinWidth="580" MinHeight="720"
+        Title="DiscBox - Setup"
+        Width="660" Height="760"
+        MinWidth="660" MinHeight="760"
         WindowStartupLocation="CenterScreen"
         CanResize="False"
         Background="#080C14"
@@ -27,7 +27,7 @@
 
     <!-- Custom TitleBar -->
     <Border Grid.Row="0" Background="#080C14" IsHitTestVisible="False">
-      <TextBlock Text="DiscBox — Setup"
+      <TextBlock Text="DiscBox - Setup"
                  Foreground="#4A5568" FontSize="11"
                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
@@ -35,29 +35,18 @@
     <!-- Main Content -->
     <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto">
 
-      <!-- ══ HEADER with gradient ══ -->
-      <Border Grid.Row="0" Padding="0,36,0,32">
+      <!-- Header with gradient -->
+      <Border Grid.Row="0" Padding="0,34,0,28">
         <Border.Background>
           <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
             <GradientStop Color="#0D1220" Offset="0"/>
             <GradientStop Color="#080C14" Offset="1"/>
           </LinearGradientBrush>
         </Border.Background>
-        <StackPanel HorizontalAlignment="Center" Spacing="12">
-          <!-- Logo glow effect using nested borders -->
-          <Border HorizontalAlignment="Center" Width="80" Height="80" CornerRadius="20">
-            <Border.Background>
-              <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                <GradientStop Color="#1A0A3A" Offset="0"/>
-                <GradientStop Color="#0A1A3A" Offset="1"/>
-              </LinearGradientBrush>
-            </Border.Background>
-            <Border BorderBrush="#7C3AED" BorderThickness="1" CornerRadius="20">
-              <Image Source="avares://DiscBox/Assets/logo.png"
-                     Width="52" Height="52"
-                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
-          </Border>
+        <StackPanel HorizontalAlignment="Center" Spacing="10">
+          <Image Source="avares://DiscBox/Assets/logo.png"
+                 Width="104" Height="104"
+                 HorizontalAlignment="Center"/>
 
           <StackPanel Spacing="4">
             <TextBlock Text="DiscBox" FontSize="34" FontWeight="Black"
@@ -76,11 +65,11 @@
         </StackPanel>
       </Border>
 
-      <!-- ══ FORM ══ -->
-      <ScrollViewer Grid.Row="1" Padding="44,0">
-        <StackPanel Spacing="20">
+      <!-- Form -->
+      <ScrollViewer Grid.Row="1" Padding="48,0">
+        <StackPanel Spacing="18" MaxWidth="540" HorizontalAlignment="Center">
 
-          <!-- ── Step 1: Webhook URL ── -->
+          <!-- Step 1: Webhook URL -->
           <Border Background="#0D1220" BorderBrush="#1E2D45" BorderThickness="1"
                   CornerRadius="12" Padding="24,20">
             <StackPanel Spacing="12">
@@ -103,7 +92,7 @@
                                          Margin="0,1,0,0"/>
                   <TextBlock FontSize="12" Foreground="#6B7280" TextWrapping="Wrap"
                              MaxWidth="420">
-                    In your Discord server → channel settings → Integrations → Webhooks → New Webhook → Copy URL.
+                    In your Discord server, open channel settings, Integrations, Webhooks, New Webhook, then Copy URL.
                   </TextBlock>
                 </StackPanel>
               </Border>
@@ -112,7 +101,11 @@
               <TextBox Watermark="https://discord.com/api/webhooks/..."
                        Text="{Binding WebhookUrl}"
                        FontFamily="Cascadia Code,Consolas,monospace"
-                       FontSize="12"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       AcceptsReturn="False"
+                       MinHeight="70"
+                       VerticalContentAlignment="Center"
                        Background="#060A10"
                        Foreground="#00E5FF"
                        BorderBrush="#1E2D45"
@@ -122,7 +115,7 @@
             </StackPanel>
           </Border>
 
-          <!-- ── Step 2: Drive Name ── -->
+          <!-- Step 2: Drive Name -->
           <Border Background="#0D1220" BorderBrush="#1E2D45" BorderThickness="1"
                   CornerRadius="12" Padding="24,20">
             <StackPanel Spacing="12">
@@ -148,7 +141,7 @@
             </StackPanel>
           </Border>
 
-          <!-- ── Step 3: Encryption ── -->
+          <!-- Step 3: Encryption -->
           <Border Background="#0D1220" BorderBrush="#1E2D45" BorderThickness="1"
                   CornerRadius="12" Padding="24,20">
             <StackPanel Spacing="12">
@@ -183,7 +176,7 @@
             </StackPanel>
           </Border>
 
-          <!-- ── Status / Error Message ── -->
+          <!-- Status / Error Message -->
           <Border IsVisible="{Binding StatusMessage, Converter={x:Static converters:StringConverters.IsNotNullOrEmpty}}"
                   CornerRadius="10" Padding="16,12">
             <Border.Background>
@@ -208,7 +201,7 @@
         </StackPanel>
       </ScrollViewer>
 
-      <!-- ══ FOOTER ══ -->
+      <!-- Footer -->
       <Border Grid.Row="2" Padding="44,20,44,28"
               BorderBrush="#1E2D45" BorderThickness="0,1,0,0">
         <Border.Background>

@@ -87,8 +87,8 @@ typedef int (*discbox_progress_cb_t)(
 typedef struct {
     /**
      * Chunk size in bytes.
-     * Default (0): 25 * 1024 * 1024 (25 MB — Discord's webhook limit).
-     * Must be <= 25 MB.
+     * Default (0): 8 * 1024 * 1024 (8 MiB).
+     * Must be <= 8 MiB.
      */
     size_t chunk_size;
 
@@ -291,6 +291,17 @@ discbox_err_t discbox_download(
 discbox_err_t discbox_backup_database(
     discbox_ctx_t        *ctx,
     const char           *local_path
+);
+
+/**
+ * Reconcile the local metadata database with the real Discord messages.
+ */
+discbox_err_t discbox_sync_remote_state(
+    discbox_ctx_t *ctx,
+    int            remove_empty_folders,
+    int           *checked_files,
+    int           *removed_files,
+    int           *removed_folders
 );
 
 /* ─────────────────────────── Utilities ─────────────────────────── */

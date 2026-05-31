@@ -4,7 +4,7 @@
         xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.DeleteProgressWindow"
         x:DataType="vm:DeleteProgressViewModel"
-        Title="DiscBox — Apagar"
+        Title="DiscBox - Delete"
         Width="500" Height="290"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -13,7 +13,7 @@
 
   <Grid RowDefinitions="30,*">
     <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
-      <TextBlock Text="A apagar ficheiro..." 
+      <TextBlock Text="Deleting file..." 
                  Foreground="#8E9297" FontSize="12" 
                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
@@ -60,7 +60,7 @@
           </StackPanel>
         </Grid>
 
-        <Button Content="Cancelar"
+        <Button Content="Cancel"
                 Command="{Binding CancelCommand}"
                 HorizontalAlignment="Right"
                 Background="#2A324A" Foreground="#E3E5E8"

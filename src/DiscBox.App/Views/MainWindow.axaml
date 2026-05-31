@@ -6,7 +6,7 @@
         xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="{Binding DriveName, StringFormat='DiscBox — {0}'}"
+        Title="{Binding DriveName, StringFormat='DiscBox - {0}'}"
         Width="1200" Height="750"
         MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterScreen"
@@ -63,10 +63,22 @@
     <Style Selector="TextBox.search-box:focus">
       <Setter Property="BorderBrush" Value="#00E5FF"/>
     </Style>
+    <Style Selector="Button.quick-access-toggle">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+    <Style Selector="Button.quick-access-toggle:pointerover">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.quick-access-toggle:pressed">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
   </Window.Styles>
 
   <!-- Content with TitleBar spacing since ExtendClientArea is True -->
-  <Grid ColumnDefinitions="240,*,250">
+  <Grid ColumnDefinitions="240,*">
 
     <!-- Sidebar -->
     <Border Grid.Column="0" Background="#161B29" BorderBrush="#2A324A" BorderThickness="0,0,1,0">
@@ -102,7 +114,30 @@
                   Margin="0,4,0,0">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <material:MaterialIcon Kind="CloudSync" Width="18" Height="18"/>
-              <TextBlock Text="Sincronizar Cloud" VerticalAlignment="Center"/>
+              <TextBlock Text="Sync Cloud" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom"
+                Padding="16,12,16,18"
+                BorderBrush="#2A324A"
+                BorderThickness="0,1,0,0">
+          <Button Command="{Binding OpenBuyMeCoffeeCommand}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Background="#1A2033"
+                  Foreground="#E3E5E8"
+                  BorderBrush="#2A324A"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Height="42"
+                  FontSize="13"
+                  FontWeight="SemiBold"
+                  ToolTip.Tip="Support DiscBox">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <material:MaterialIcon Kind="Coffee" Width="18" Height="18" Foreground="#FACC15"/>
+              <TextBlock Text="Buy me a coffee" VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
         </Border>
@@ -118,7 +153,7 @@
                     Width="28" Height="28"
                     CornerRadius="6"
                     Padding="0"
-                    ToolTip.Tip="Adicionar drive">
+                    ToolTip.Tip="Add drive">
               <material:MaterialIcon Kind="Plus" Width="18" Height="18"
                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button>
@@ -146,7 +181,7 @@
                           Width="28" Height="38"
                           Padding="0"
                           CornerRadius="6"
-                          ToolTip.Tip="Alternar encriptação">
+                          ToolTip.Tip="Toggle encryption">
                     <Panel Width="16" Height="16">
                       <material:MaterialIcon Kind="LockOpen" Width="16" Height="16"
                                              Foreground="#8E9297"
@@ -166,7 +201,7 @@
                           Width="28" Height="38"
                           Padding="0"
                           CornerRadius="6"
-                          ToolTip.Tip="Renomear drive">
+                          ToolTip.Tip="Rename drive">
                     <material:MaterialIcon Kind="Pencil" Width="16" Height="16"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                   </Button>
@@ -181,16 +216,21 @@
           <ItemsControl ItemsSource="{Binding QuickAccessFolders}">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <Button Classes="sidebar-item" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).NavigateToCommand}" CommandParameter="{Binding Path}">
+                <Button Classes="sidebar-item" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenQuickAccessCommand}" CommandParameter="{Binding}">
                   <Button.ContextMenu>
                     <ContextMenu Background="#161B29" BorderBrush="#2A324A" Foreground="#E3E5E8">
-                      <MenuItem Header="Remover" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RemoveFromQuickAccessCommand}" CommandParameter="{Binding}">
+                      <MenuItem Header="Remove" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RemoveFromQuickAccessCommand}" CommandParameter="{Binding}">
                         <MenuItem.Icon><material:MaterialIcon Kind="Delete" Foreground="#ff6b6b"/></MenuItem.Icon>
                       </MenuItem>
                     </ContextMenu>
                   </Button.ContextMenu>
                   <StackPanel Orientation="Horizontal" Spacing="12">
-                    <material:MaterialIcon Kind="FolderStar" Width="20" Height="20" Foreground="#00E5FF"/>
+                    <Panel Width="20" Height="20">
+                      <material:MaterialIcon Kind="FolderStar" Width="20" Height="20" Foreground="#00E5FF"
+                                             IsVisible="{Binding !IsFile}"/>
+                      <material:MaterialIcon Kind="FileStarOutline" Width="20" Height="20" Foreground="#00E5FF"
+                                             IsVisible="{Binding IsFile}"/>
+                    </Panel>
                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="14"/>
                   </StackPanel>
                 </Button>
@@ -206,7 +246,7 @@
     <Grid Grid.Column="1" RowDefinitions="30,*">
       <!-- TitleBar background (custom) -->
       <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
-        <TextBlock Text="{Binding DriveName, StringFormat='DiscBox — {0}'}" 
+        <TextBlock Text="{Binding DriveName, StringFormat='DiscBox - {0}'}" 
                    Foreground="#8E9297" FontSize="12" 
                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
       </Border>
@@ -262,7 +302,7 @@
                                      IsHitTestVisible="False"/>
               <TextBox Classes="search-box"
                        Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                       Watermark="Pesquisar nesta drive"/>
+                       Watermark="Search this drive"/>
             </Grid>
 
             <Button Grid.Column="3"
@@ -304,35 +344,35 @@
               <MenuItem Header="Download" Command="{Binding DownloadEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <MenuItem.Icon><material:MaterialIcon Kind="Download"/></MenuItem.Icon>
               </MenuItem>
-              <MenuItem Header="Adicionar ao Quick Access" Command="{Binding AddToQuickAccessCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry.IsFolder, FallbackValue=False}">
+              <MenuItem Header="Add to Quick Access" Command="{Binding AddToQuickAccessCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <MenuItem.Icon><material:MaterialIcon Kind="FolderStar"/></MenuItem.Icon>
               </MenuItem>
               <Separator Background="#2A324A"/>
-              <MenuItem Header="Cortar" Command="{Binding CutEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <MenuItem Header="Cut" Command="{Binding CutEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <MenuItem.Icon><material:MaterialIcon Kind="ContentCut"/></MenuItem.Icon>
               </MenuItem>
-              <MenuItem Header="Copiar" Command="{Binding CopyEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <MenuItem Header="Copy" Command="{Binding CopyEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <MenuItem.Icon><material:MaterialIcon Kind="ContentCopy"/></MenuItem.Icon>
               </MenuItem>
-              <MenuItem Header="Colar" Command="{Binding PasteCommand}" IsVisible="{Binding HasClipboard}">
+              <MenuItem Header="Paste" Command="{Binding PasteCommand}" IsVisible="{Binding HasClipboard}">
                 <MenuItem.Icon><material:MaterialIcon Kind="ContentPaste"/></MenuItem.Icon>
               </MenuItem>
               <Separator Background="#2A324A"/>
-              <MenuItem Header="Renomear" Command="{Binding RenameEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <MenuItem Header="Rename" Command="{Binding RenameEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <MenuItem.Icon><material:MaterialIcon Kind="Pencil"/></MenuItem.Icon>
               </MenuItem>
-              <MenuItem Header="Apagar" Command="{Binding DeleteEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}" Foreground="#ff6b6b">
+              <MenuItem Header="Delete" Command="{Binding DeleteEntryCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}" Foreground="#ff6b6b">
                 <MenuItem.Icon><material:MaterialIcon Kind="Delete" Foreground="#ff6b6b"/></MenuItem.Icon>
               </MenuItem>
               <Separator Background="#2A324A"/>
-              <MenuItem Header="Copiar caminho" Command="{Binding CopyPathCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <MenuItem Header="Copy path" Command="{Binding CopyPathCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <MenuItem.Icon><material:MaterialIcon Kind="Link"/></MenuItem.Icon>
               </MenuItem>
-              <MenuItem Header="Propriedades" Command="{Binding ShowPropertiesCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <MenuItem Header="Properties" Command="{Binding ShowPropertiesCommand}" CommandParameter="{Binding SelectedEntry}" IsVisible="{Binding SelectedEntry, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <MenuItem.Icon><material:MaterialIcon Kind="Information"/></MenuItem.Icon>
               </MenuItem>
               <Separator Background="#2A324A"/>
-              <MenuItem Header="Nova Pasta" Command="{Binding NewFolderCommand}">
+              <MenuItem Header="New Folder" Command="{Binding NewFolderCommand}">
                 <MenuItem.Icon><material:MaterialIcon Kind="FolderPlus"/></MenuItem.Icon>
               </MenuItem>
               <MenuItem Header="Upload" Command="{Binding UploadFileCommand}">
@@ -345,7 +385,7 @@
               <Border CornerRadius="8"
                       Padding="8"
                       Background="{Binding IsUiSelected, Converter={StaticResource SelectionBackgroundConverter}}">
-                <Grid ColumnDefinitions="48,*,120,160" Height="48">
+                <Grid ColumnDefinitions="48,*,120,34,160" Height="48">
                   <Panel Grid.Column="0" Width="40" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <material:MaterialIcon Kind="{Binding Converter={StaticResource FileEntryToIconConverter}}" 
                                            Foreground="{Binding Converter={StaticResource FileEntryToColorConverter}}" 
@@ -362,8 +402,26 @@
                   <TextBlock Grid.Column="2" Text="{Binding SizeDisplay}"
                              Foreground="#8E9297" FontSize="13"
                              VerticalAlignment="Center" HorizontalAlignment="Right"
-                             Margin="0,0,16,0"/>
-                  <TextBlock Grid.Column="3"
+                             Margin="0,0,10,0"/>
+                  <Button Grid.Column="3"
+                          Classes="quick-access-toggle"
+                          Click="OnQuickAccessStarClicked"
+                          Width="32" Height="32"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          ToolTip.Tip="Add to Quick Access">
+                    <Panel Width="18" Height="18">
+                      <material:MaterialIcon Kind="StarOutline" Width="18" Height="18"
+                                             Foreground="#8E9297"
+                                             IsVisible="{Binding !IsQuickAccess}"
+                                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                      <material:MaterialIcon Kind="Star" Width="18" Height="18"
+                                             Foreground="#FACC15"
+                                             IsVisible="{Binding IsQuickAccess}"
+                                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Panel>
+                  </Button>
+                  <TextBlock Grid.Column="4"
                              Text="{Binding ModifiedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
                              Foreground="#6A0DAD" FontSize="12"
                              VerticalAlignment="Center" HorizontalAlignment="Right"
@@ -376,29 +434,46 @@
           <Canvas IsHitTestVisible="False" Panel.ZIndex="10">
             <Border x:Name="SelectionRectangle"
                     IsVisible="False"
-                    Background="#556A0DAD"
+                    Background="#663D1C8D"
                     BorderBrush="#FF00E5FF"
                     BorderThickness="2"
                     CornerRadius="3"/>
           </Canvas>
+          <Border x:Name="DropUploadOverlay"
+                  IsVisible="False"
+                  IsHitTestVisible="False"
+                  Background="#D90B0F19"
+                  BorderBrush="#00E5FF"
+                  BorderThickness="1"
+                  CornerRadius="12">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="14">
+              <Border Width="72" Height="72"
+                      CornerRadius="20"
+                      Background="#1A2033"
+                      BorderBrush="#6A0DAD"
+                      BorderThickness="1">
+                <material:MaterialIcon Kind="CloudUpload"
+                                       Width="38" Height="38"
+                                       Foreground="#00E5FF"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+              </Border>
+              <TextBlock Text="Drop to upload"
+                         Foreground="#E3E5E8"
+                         FontSize="20"
+                         FontWeight="Bold"
+                         HorizontalAlignment="Center"/>
+              <TextBlock Text="Files will be uploaded to the current drive"
+                         Foreground="#8E9297"
+                         FontSize="13"
+                         HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
         </Grid>
 
       </DockPanel>
-    </Grid>
-
-    <!-- Advertising Space -->
-    <Grid Grid.Column="2" RowDefinitions="30,*">
-      <!-- TitleBar background (custom) -->
-      <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False"/>
-      
-      <Border Grid.Row="1" Background="#111622" BorderBrush="#2A324A" BorderThickness="1,0,0,0">
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16">
-          <material:MaterialIcon Kind="BullhornOutline" Width="48" Height="48" Foreground="#2A324A"/>
-          <TextBlock Text="Espaço para Publicidade" 
-                     Foreground="#2A324A" FontSize="14" FontWeight="SemiBold"
-                     TextWrapping="Wrap" TextAlignment="Center" Width="180"/>
-        </StackPanel>
-      </Border>
     </Grid>
 
   </Grid>

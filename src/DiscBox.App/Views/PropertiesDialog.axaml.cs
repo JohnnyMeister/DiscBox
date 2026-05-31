@@ -16,11 +16,11 @@ public partial class PropertiesDialog : Window
     {
         InitializeComponent();
         this.FindControl<TextBlock>("NameText")!.Text    = entry.Name;
-        this.FindControl<TextBlock>("TypeText")!.Text    = entry.IsFolder ? "Pasta" : "Ficheiro";
-        this.FindControl<TextBlock>("SizeText")!.Text    = entry.SizeDisplay == "" ? "—" : entry.SizeDisplay;
+        this.FindControl<TextBlock>("TypeText")!.Text    = entry.IsFolder ? "Folder" : "File";
+        this.FindControl<TextBlock>("SizeText")!.Text    = entry.SizeDisplay == "" ? "-" : entry.SizeDisplay;
         this.FindControl<TextBlock>("PathText")!.Text    = entry.VirtualPath;
         this.FindControl<TextBlock>("CreatedText")!.Text = entry.CreatedAt.ToString("dd/MM/yyyy HH:mm");
-        this.FindControl<TextBlock>("EncryptedText")!.Text = entry.Encrypted ? "Sim" : "Não";
+        this.FindControl<TextBlock>("EncryptedText")!.Text = entry.Encrypted ? "Yes" : "No";
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);

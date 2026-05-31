@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
         x:Class="DiscBox.Views.RenameDialog"
-        Title="Renomear"
+        Title="Rename"
         Width="400" Height="220"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
@@ -12,7 +12,7 @@
   <Grid RowDefinitions="30,*">
     <!-- TitleBar background -->
     <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
-      <TextBlock Text="Renomear" 
+      <TextBlock Text="Rename" 
                  Foreground="#8E9297" FontSize="12" 
                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
@@ -21,7 +21,7 @@
       <StackPanel Spacing="16">
         <StackPanel Orientation="Horizontal" Spacing="10">
           <material:MaterialIcon Kind="Pencil" Foreground="#00E5FF" Width="24" Height="24"/>
-          <TextBlock Text="Novo nome:"
+          <TextBlock Text="New name:"
                      Foreground="#E3E5E8" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
         </StackPanel>
 
@@ -31,10 +31,10 @@
                  Padding="16,12" FontSize="14"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,8,0,0">
-          <Button Content="Cancelar" Click="OnCancel"
+          <Button Content="Cancel" Click="OnCancel"
                   Background="#2A324A" Foreground="#E3E5E8"
                   CornerRadius="8" Padding="20,10" FontWeight="SemiBold"/>
-          <Button Content="Renomear" Click="OnRename"
+          <Button Content="Rename" Click="OnRename"
                   Background="#00E5FF" Foreground="#0B0F19"
                   CornerRadius="8" Padding="20,10" FontWeight="Bold"/>
         </StackPanel>

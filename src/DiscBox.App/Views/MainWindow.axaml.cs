@@ -3,12 +3,16 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using DiscBox.Models;
+using DiscBox.Services;
 using DiscBox.ViewModels;
 using System.Collections;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DiscBox.Views;
 
@@ -17,6 +21,7 @@ public partial class MainWindow : Window
     private bool _isDragSelecting;
     private bool _dragSelectionActive;
     private bool _isClearingSelection;
+    private bool _updateCheckStarted;
     private Point _dragStart;
     private MainViewModel? _viewModel;
 
@@ -24,11 +29,28 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         AttachDragSelectionHandlers();
+        Opened += OnOpened;
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    private async void OnOpened(object? sender, EventArgs e)
+    {
+        if (_updateCheckStarted)
+            return;
+
+        _updateCheckStarted = true;
+        await Task.Delay(1200);
+
+        var update = await UpdateService.CheckForUpdateAsync();
+        if (update is null || !IsVisible)
+            return;
+
+        var dialog = new UpdateDialog(update);
+        await dialog.ShowDialog(this);
     }
 
     protected override void OnDataContextChanged(EventArgs e)
@@ -58,6 +80,80 @@ public partial class MainWindow : Window
         host.AddHandler(PointerPressedEvent, OnFileListPointerPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         host.AddHandler(PointerMovedEvent, OnFileListPointerMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         host.AddHandler(PointerReleasedEvent, OnFileListPointerReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
+        DragDrop.SetAllowDrop(host, true);
+        host.AddHandler(DragDrop.DragEnterEvent, OnFileListDragEnter, RoutingStrategies.Bubble);
+        host.AddHandler(DragDrop.DragOverEvent, OnFileListDragOver, RoutingStrategies.Bubble);
+        host.AddHandler(DragDrop.DragLeaveEvent, OnFileListDragLeave, RoutingStrategies.Bubble);
+        host.AddHandler(DragDrop.DropEvent, OnFileListDrop, RoutingStrategies.Bubble);
+    }
+
+    private void OnFileListDragEnter(object? sender, DragEventArgs e)
+    {
+        if (HasDraggedFiles(e))
+            SetDropOverlayVisible(true);
+        OnFileListDragOver(sender, e);
+    }
+
+    private void OnFileListDragOver(object? sender, DragEventArgs e)
+    {
+        var hasFiles = HasDraggedFiles(e);
+        SetDropOverlayVisible(hasFiles);
+        e.DragEffects = hasFiles
+            ? DragDropEffects.Copy
+            : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private void OnFileListDragLeave(object? sender, DragEventArgs e)
+    {
+        SetDropOverlayVisible(false);
+        e.Handled = true;
+    }
+
+    private async void OnFileListDrop(object? sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        SetDropOverlayVisible(false);
+        if (DataContext is not MainViewModel vm)
+            return;
+
+        var files = e.Data.GetFiles();
+        if (files is null)
+            return;
+
+        var paths = files
+            .Select(file => file.TryGetLocalPath())
+            .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+            .Cast<string>()
+            .ToArray();
+
+        if (paths.Length == 0)
+            return;
+
+        await vm.UploadDroppedFilesAsync(paths);
+    }
+
+    private static bool HasDraggedFiles(DragEventArgs e) => e.Data.Contains(DataFormats.Files);
+
+    private void SetDropOverlayVisible(bool visible)
+    {
+        var overlay = this.FindControl<Control>("DropUploadOverlay");
+        if (overlay is not null)
+            overlay.IsVisible = visible;
+    }
+
+    private void OnQuickAccessStarClicked(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (DataContext is not MainViewModel vm)
+            return;
+
+        var entry = FindDataContext<FileEntry>(sender);
+        if (entry is null)
+            return;
+
+        if (vm.ToggleQuickAccessCommand.CanExecute(entry))
+            vm.ToggleQuickAccessCommand.Execute(entry);
     }
 
     private void OnEntryDoubleTapped(object? sender, TappedEventArgs e)
@@ -86,6 +182,9 @@ public partial class MainWindow : Window
     private void OnFileListPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is not Control host)
+            return;
+
+        if (FindVisual<Button>(e.Source) is not null)
             return;
 
         var point = e.GetCurrentPoint(host);
@@ -212,6 +311,19 @@ public partial class MainWindow : Window
         {
             if (visual is StyledElement styled && styled.DataContext is T item)
                 return item;
+            visual = visual.GetVisualParent();
+        }
+
+        return null;
+    }
+
+    private static T? FindVisual<T>(object? source) where T : Visual
+    {
+        var visual = source as Visual;
+        while (visual is not null)
+        {
+            if (visual is T typed)
+                return typed;
             visual = visual.GetVisualParent();
         }
 

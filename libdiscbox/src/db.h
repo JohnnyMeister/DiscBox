@@ -149,6 +149,12 @@ int db_delete(db_ctx_t *ctx, int64_t id);
 int db_delete_tree(db_ctx_t *ctx, const char *virtual_path);
 
 /**
+ * Delete every folder that no longer has children. Repeats until no more empty
+ * folders remain, because deleting one folder can make its parent empty.
+ */
+int db_delete_empty_folders(db_ctx_t *ctx, int *out_deleted_count);
+
+/**
  * Get all descendant file entries under a virtual folder path.
  * Used to enumerate everything that needs to be deleted from Discord
  * when a folder is removed.

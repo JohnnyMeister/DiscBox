@@ -1,333 +1,352 @@
+<div align="center">
+
 # DiscBox
 
-DiscBox is an experimental open-source personal cloud drive that uses Discord webhooks as a remote storage backend.
+### Your personal cloud drive powered by Discord.
 
-It provides a modern desktop cloud storage experience built on top of a virtual filesystem and chunk-based storage architecture.
+DiscBox is a desktop cloud storage application that lets you use Discord as a private storage backend.
+Upload, download, organize, and manage your files through a clean drive-like interface.
 
-DiscBox combines:
+<br />
 
-* Native high-performance backend code (C)
-* Modern Avalonia desktop UI
-* Discord-based storage
-* Local metadata indexing
-* Chunk reconstruction
-* Per-drive encryption support
-* Multi-drive/webhook architecture
+[![Release](https://img.shields.io/github/v/release/JohnnyMeister/DiscBox?style=for-the-badge)](https://github.com/JohnnyMeister/DiscBox/releases)
+[![Downloads](https://img.shields.io/github/downloads/JohnnyMeister/DiscBox/total?style=for-the-badge)](https://github.com/JohnnyMeister/DiscBox/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-blue?style=for-the-badge)](#)
+[![License](https://img.shields.io/github/license/JohnnyMeister/DiscBox?style=for-the-badge)](LICENSE)
 
-⚠️ DiscBox is still under active development and should currently be considered experimental software.
+<br />
 
----
+[Download DiscBox](https://github.com/JohnnyMeister/DiscBox/releases/latest)
 
-# Features
-
-## Multi-Drive System
-
-DiscBox now supports multiple independent drives/webhooks.
-
-Each drive can have:
-
-* Its own Discord webhook
-* Independent SQLite database
-* Independent encryption state
-* Custom drive name
-
-The Drive section now behaves similarly to Windows Explorer drives.
-
-Features:
-
-* Add new drives/webhooks
-* Rename drives
-* Switch between drives
-* Per-drive encryption toggle
-* Independent storage isolation
+</div>
 
 ---
 
-## File Explorer
+## Overview
 
-* Modern desktop file explorer UI
-* Folder navigation
-* Breadcrumb navigation
-* Context menu support
-* File/folder icons
-* Status messages and operation feedback
-* Sorting-ready architecture
+DiscBox turns Discord into a personal cloud drive.
+
+Instead of using a traditional cloud provider, DiscBox stores your files through Discord webhooks. Files are split into chunks, uploaded to Discord, indexed locally, and restored when downloaded.
+
+The application gives you a familiar desktop file manager experience while using Discord as the remote storage layer.
 
 ---
 
-## File Operations
+## Download
 
-* Upload files
-* Download files
-* Delete files/folders
-* Rename files/folders
-* Move files between folders
-* Create folders
-* Copy virtual paths
-* Cut / Copy / Paste support
-* Context menu actions
+The easiest way to install DiscBox is through the latest GitHub release.
 
----
+### Step 1: Open the latest release page
 
-## Transfer System
+Click the button below:
 
-* Chunked uploads using Discord webhooks
-* Stable chunk reconstruction system
-* Automatic file reconstruction from chunks
-* Fresh Discord CDN URL retrieval
-* Automatic expired URL recovery
-* Upload progress tracking
-* Download progress tracking
-* Delete progress tracking
-* Transfer cancellation support
-* Real-time transfer speed display
-* ETA estimation
-* Chunk-level progress reporting
-* Large file support
-* Background async operations
+[Download the latest version of DiscBox](https://github.com/JohnnyMeister/DiscBox/releases/latest)
 
----
+### Step 2: Find the Assets section
 
-# Encryption System
+On the release page, scroll down until you see **Assets**.
 
-DiscBox now supports real encrypted storage.
+This is where the downloadable files are listed.
 
-Encryption is implemented directly inside the native libdiscbox backend using:
+### Step 3: Choose the correct download
 
-* AES-256-GCM encryption
-* Per-drive encryption state
-* Automatic decrypt-on-download pipeline
+Download one of these files:
 
-## Encryption Features
+| File                                 | Recommended for            |
+| ------------------------------------ | -------------------------- |
+| `DiscBoxSetup-0.1.0.exe`             | Most users                 |
+| `DiscBox-0.1.0-win-x64-portable.zip` | Portable use, no installer |
 
-* Encrypted uploads stored unreadable on Discord
-* Transparent decryption during download
-* Per-file encryption metadata
-* Encryption toggle per drive
-* Existing files preserve their original encryption state
+For most users, the recommended option is:
 
-## Drive Encryption Toggle
+```txt
+DiscBoxSetup-0.1.0.exe
+```
 
-Each drive has its own encryption toggle:
+### Step 4: Install or run DiscBox
 
-* Open lock = uploads stored normally
-* Closed lock = uploads encrypted
+If you downloaded the installer, open:
 
-Changing a drive encryption state only affects future uploads for that drive.
+```txt
+DiscBoxSetup-0.1.0.exe
+```
+
+Then follow the installation steps.
+
+If you downloaded the portable version, extract:
+
+```txt
+DiscBox-0.1.0-win-x64-portable.zip
+```
+
+Then run DiscBox from the extracted folder.
 
 ---
 
-# Storage System
+## Setup Preview
 
-* Virtual filesystem abstraction
-* SQLite metadata indexing
-* Discord message-based chunk storage
-* Automatic chunk reconstruction
-* Expired CDN URL recovery
-* Chunk metadata management
-* Background helper processes
+The first setup guides you through adding your Discord webhook and creating your first DiscBox drive.
+
+<p align="center">
+  <img src="docs/screenshots/Setup.gif" alt="DiscBox setup preview" width="850">
+</p>
 
 ---
 
-# Current Status
+## Main Interface
 
-DiscBox is now stable for core storage operations.
+DiscBox provides a clean desktop interface for managing your Discord-backed drives.
 
-The upload, download, delete, and reconstruction systems are fully operational.
-
----
-
-# Working Features
-
-✅ Multi-drive/webhook support
-
-✅ Per-drive encryption
-
-✅ AES-256-GCM encrypted uploads
-
-✅ Uploading files
-
-✅ Downloading files
-
-✅ Stable chunk reconstruction
-
-✅ Large file support
-
-✅ File deletion (Discord + database sync)
-
-✅ Folder deletion
-
-✅ Rename operations
-
-✅ Context menu actions
-
-✅ Transfer progress windows
-
-✅ Speed + ETA tracking
-
-✅ Virtual filesystem
-
-✅ Automatic Discord CDN URL refresh
-
-✅ Duplicate upload prevention
-
-✅ Background delete helper process
-
-✅ Multi-chunk transfer support
+<p align="center">
+  <img src="docs/screenshots/main.png" alt="DiscBox main window" width="950">
+</p>
 
 ---
 
-# Important Fixes & Improvements
+## Features
 
-## Download System Rewrite
-
-The download system was fully rewritten and stabilized.
-
-Improvements:
-
-* Stable chunk reconstruction
-* Expired CDN URL recovery
-* Better rate-limit handling
-* Large file support
-* Chunk ordering fixes
-* Fresh Discord attachment retrieval
+* Discord webhook-based cloud storage
+* Modern Windows desktop interface
+* Multiple drives support
+* Multiple webhook support
+* File and folder management
+* Upload and download progress
+* Local SQLite metadata indexing
+* Optional per-drive encryption
+* Drive renaming
+* Portable and installer builds
 
 ---
 
-## Discord Cleanup on Delete
+## How DiscBox Works
 
-Deleting files/folders now:
+DiscBox uses Discord webhooks as the storage backend.
 
-* Deletes Discord webhook messages/chunks
-* Cleans metadata database
-* Handles missing Discord messages safely
-* Uses a dedicated helper process to avoid UI deadlocks
+When you upload a file:
 
----
+1. DiscBox splits the file into smaller chunks.
+2. The chunks are uploaded to Discord using your webhook.
+3. File information is saved locally in a database.
+4. When you download the file, DiscBox retrieves the chunks and rebuilds the original file.
 
-## Duplicate Upload Protection
-
-DiscBox now:
-
-* Detects duplicate virtual paths before upload
-* Prevents unnecessary Discord uploads
-* Automatically cleans orphaned chunks on failure
+If encryption is enabled for a drive, files uploaded to that drive are encrypted before being sent to Discord and decrypted when downloaded through DiscBox.
 
 ---
 
-## Unicode Upload Fixes
+# Creating a Discord Webhook
 
-Fixed Discord upload failures caused by:
+To use DiscBox, you need a Discord webhook.
 
-* Non-ASCII filenames
-* Unicode chunk attachment names
-
-DiscBox now:
-
-* Uses safe ASCII chunk names internally
-* Preserves original filenames in metadata/UI
+A webhook allows DiscBox to upload your file chunks to a Discord channel.
 
 ---
 
-## Improved Progress UI
+## Step 1: Create a private Discord server
 
-Transfer windows now display:
+Open Discord and create a new server.
 
-* Current chunk
-* Total chunks
-* Bytes processed
-* Transfer speed
-* ETA estimation
-* URL retrieval phase
-* Delete progress status
+You can name it something like:
 
----
+```txt
+DiscBox Storage
+```
 
-# Technical Details
-
-## Chunk Size
-
-Files are split into:
-
-* 10MB chunks
-
-This limit exists because of Discord webhook upload restrictions.
+This server should be private and used only by you.
 
 ---
 
-## Transfer Behavior
+## Step 2: Create a storage channel
 
-Uploads/downloads:
+Inside your server, create a new text channel.
 
-* Have no strict timeout
-* Continue until:
+Example name:
 
-  * completion
-  * user cancellation
-  * unrecoverable error
+```txt
+discbox-drive
+```
+
+Recommended:
+
+* Use one private channel per DiscBox drive.
+* Do not share this channel with other people.
+* Do not delete DiscBox messages from this channel manually.
 
 ---
 
-# Architecture
+## Step 3: Open the channel settings
 
-## Frontend
+Hover over the channel name and click the settings icon.
 
+It usually looks like a small gear icon.
+
+---
+
+## Step 4: Go to Integrations
+
+Inside the channel settings, open:
+
+```txt
+Integrations
+```
+
+Then choose:
+
+```txt
+Webhooks
+```
+
+---
+
+## Step 5: Create a new webhook
+
+Click:
+
+```txt
+New Webhook
+```
+
+Give it a clear name, for example:
+
+```txt
+DiscBox Drive
+```
+
+Make sure the webhook is assigned to the correct storage channel.
+
+---
+
+## Step 6: Copy the webhook URL
+
+Click:
+
+```txt
+Copy Webhook URL
+```
+
+This URL is required by DiscBox.
+
+Keep it private. Anyone with access to this webhook URL may be able to send messages to your Discord channel.
+
+---
+
+## Step 7: Add the webhook to DiscBox
+
+Open DiscBox and paste the webhook URL when creating a new drive.
+
+You can then choose:
+
+* Drive name
+* Webhook URL
+* Whether the drive should use encryption
+
+After that, your Discord-backed drive is ready to use.
+
+---
+
+## Recommended Discord Setup
+
+For the best experience, use this structure:
+
+```txt
+DiscBox Storage
+├── drive-personal
+├── drive-documents
+└── drive-backups
+```
+
+Each channel can have its own webhook and each webhook can be added to DiscBox as a separate drive.
+
+---
+
+## Encryption
+
+DiscBox supports optional encryption per drive.
+
+When encryption is enabled:
+
+* New files uploaded to that drive are encrypted before being sent to Discord.
+* Files are automatically decrypted when downloaded through DiscBox.
+* Existing files keep the encryption state they had when they were uploaded.
+
+You can toggle encryption individually for each drive.
+
+---
+
+## Compatibility With Disbox
+
+DiscBox was inspired by the original Disbox project.
+
+It follows the same general idea of using Discord as a personal storage backend and is designed to be compatible with Disbox-style drives, allowing users to back up or migrate existing Disbox data into DiscBox.
+
+---
+
+## Important Notes
+
+DiscBox depends on both Discord and local metadata to manage your files correctly.
+
+For best results:
+
+* Keep your webhook URLs private.
+* Do not manually delete DiscBox messages from Discord.
+* Use private Discord channels.
+* Use one webhook per drive.
+* Keep a copy of important data outside DiscBox when needed.
+
+---
+
+## Build From Source
+
+Requirements:
+
+* .NET SDK
+* Visual Studio, Rider, or another compatible C# IDE
+* C/C++ build tools for the native backend
+
+Clone the repository:
+
+```bash
+git clone https://github.com/JohnnyMeister/DiscBox.git
+cd DiscBox
+```
+
+Open the solution:
+
+```txt
+DiscBox.sln
+```
+
+Build and run the project from your IDE.
+
+---
+
+## Technology
+
+DiscBox is built with:
+
+* C#
 * Avalonia UI
-* C# / .NET
-
-## Backend
-
-* Native C library
-* libcurl
+* Native C backend
 * SQLite
-* AES-256-GCM crypto implementation
+* Discord Webhooks
+* AES-256-GCM encryption
 
 ---
 
-# Roadmap
+## License
 
-Planned improvements before beta:
+This project is licensed under the terms of the repository license.
 
-* Drag & drop uploads
-* Multi-file selection improvements
-* Better preview system
-* UI overhaul/polish
-* Search system
-* Parallel chunk downloads
-* Transfer queue system
-* Resume support
-* File integrity verification
-* Hash validation
-* Better diagnostics/logging
-* Better folder UX
-* Performance optimizations
+See the [LICENSE](LICENSE) file for details.
 
 ---
 
-# Known Limitations
+<div align="center">
 
-DiscBox depends heavily on Discord infrastructure.
+**DiscBox**
+A simple personal cloud drive powered by Discord.
 
-Possible limitations include:
+<br />
 
-* Discord rate limits
-* Webhook restrictions
-* Attachment availability
-* CDN propagation delays
-* Discord API behavior changes
+[Download Latest Release](https://github.com/JohnnyMeister/DiscBox/releases/latest)
 
----
-
-# Disclaimer
-
-DiscBox is an experimental educational project.
-
-It is not production-ready and should not be used for important or irreplaceable data.
-
-The project relies on Discord infrastructure in ways it was not originally designed for, so long-term compatibility and reliability are not guaranteed.
-
----
-
-# License
-
-Open-source project — license to be defined.
+</div>

@@ -1,0 +1,17 @@
+# Build outputs
+bin/
+obj/
+[Bb]uild/
+libdiscbox/build/
+
+# Release artifacts
+release/
+*.exe
+*.dll
+*.pdb
+*.zip
+*.sha256
+
+# IDE/editor state
+.vs/
+.idea/

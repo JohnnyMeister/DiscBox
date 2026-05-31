@@ -1,2 +1,0 @@
-C:\msys64\mingw64\bin\ar.exe qc libdiscbox_static.a CMakeFiles/discbox_static.dir/src/discbox.c.obj CMakeFiles/discbox_static.dir/src/chunk.c.obj CMakeFiles/discbox_static.dir/src/discord.c.obj CMakeFiles/discbox_static.dir/src/db.c.obj CMakeFiles/discbox_static.dir/src/ratelimit.c.obj CMakeFiles/discbox_static.dir/src/discbox_crypto.c.obj
-C:\msys64\mingw64\bin\ranlib.exe libdiscbox_static.a

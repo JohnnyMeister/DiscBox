@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="src/DiscBox.App/Assets/logo.png" alt="DiscBox logo" width="220">
+
 # DiscBox
 
 ### Your personal cloud drive powered by Discord.

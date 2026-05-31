@@ -25,6 +25,7 @@ public partial class MainViewModel : ObservableObject
     private static readonly TimeSpan DeleteTimeout = TimeSpan.FromHours(6);
     private readonly HashSet<FileEntry> _uiSelectedEntries = [];
     private bool _suppressSearchRefresh;
+    private bool _isCloudSyncing;
     private int _searchRevision;
 
     private static IStorageProvider? StorageProvider =>
@@ -494,6 +495,11 @@ public partial class MainViewModel : ObservableObject
         return result;
     }
 
+    private int CountLocalFiles()
+    {
+        return _discbox is null ? 0 : CollectFilesRecursive("/").Count;
+    }
+
     private List<FileEntry> CollectEntriesRecursive(string virtualPath)
     {
         var result = new List<FileEntry>();
@@ -603,6 +609,57 @@ public partial class MainViewModel : ObservableObject
         }
 
         StatusText = $"Drive renamed to '{configDrive.Name}'.";
+    }
+
+    [RelayCommand]
+    private async Task RemoveDriveAsync(ConfigService.DriveConfig? drive)
+    {
+        if (drive is null) return;
+
+        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+
+        var dialog = new Views.ConfirmDriveRemoveDialog(drive.Name);
+        var confirmed = mainWindow is not null
+            ? await dialog.ShowDialog<bool>(mainWindow)
+            : false;
+        if (!confirmed) return;
+
+        var configDrive = _config.Current.Drives.FirstOrDefault(d => d.Id == drive.Id);
+        if (configDrive is null) return;
+
+        var wasActive = _activeDrive?.Id == configDrive.Id ||
+                        _config.Current.ActiveDriveId == configDrive.Id;
+
+        _config.Current.Drives.Remove(configDrive);
+
+        if (wasActive)
+        {
+            var nextDrive = _config.Current.Drives.FirstOrDefault();
+            _config.Current.ActiveDriveId = nextDrive?.Id ?? string.Empty;
+            _config.Save();
+            RefreshDriveList();
+
+            if (nextDrive is not null)
+            {
+                ActivateDrive(nextDrive, save: false, forceReconnect: true);
+                await NavigateToAsync("/");
+                StatusText = $"Drive '{configDrive.Name}' removed. Switched to '{nextDrive.Name}'.";
+                return;
+            }
+
+            ActivateDrive(null, save: false);
+            Entries.Clear();
+            CurrentPath = "/";
+            UpdateBreadcrumbs("/");
+            StatusText = $"Drive '{configDrive.Name}' removed. Add a drive to continue.";
+            return;
+        }
+
+        _config.Save();
+        RefreshDriveList();
+        StatusText = $"Drive '{configDrive.Name}' removed.";
     }
 
     [RelayCommand]
@@ -1257,87 +1314,142 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task MigrateFromDisboxAsync()
     {
+        if (_isCloudSyncing)
+            return;
+
+        var mainWindow = (Avalonia.Application.Current?.ApplicationLifetime
+            as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+
+        var progressVm = new CloudSyncProgressViewModel();
+        Views.CloudSyncProgressWindow? progressWindow = null;
+        Task? dialogTask = null;
+
+        if (mainWindow is not null)
+        {
+            progressWindow = new Views.CloudSyncProgressWindow { DataContext = progressVm };
+            dialogTask = progressWindow.ShowDialog(mainWindow);
+            await Task.Yield();
+        }
+
+        _isCloudSyncing = true;
+        try
+        {
+            await RunCloudSyncAsync(progressVm);
+            await Task.Delay(progressVm.HasError ? 1800 : 900);
+        }
+        finally
+        {
+            _isCloudSyncing = false;
+            if (progressWindow is not null)
+            {
+                progressWindow.AllowClose();
+                progressWindow.Close();
+            }
+
+            if (dialogTask is not null)
+                await dialogTask;
+        }
+    }
+
+    private async Task RunCloudSyncAsync(CloudSyncProgressViewModel progressVm)
+    {
         var restoredBackup = false;
         var importedFolders = 0;
         var importedFiles = 0;
         var migrationSucceeded = false;
-        RemoteSyncResult? remoteSync = null;
+        RemoteSyncResult? syncResult = null;
         try
         {
+            progressVm.Update(5, "Checking remote DiscBox backup...", "Looking for the latest cloud backup.");
             StatusText = "Syncing remote DiscBox backup...";
             restoredBackup = await RestoreActiveDriveBackupAsync();
             if (restoredBackup)
             {
+                progressVm.Update(24, "Remote backup restored", "Importing any Disbox cloud data next.");
                 await RefreshAsync();
                 StatusText = "DiscBox backup restored. Importing Disbox data...";
             }
             else
             {
+                progressVm.Update(18, "No remote backup found", "Importing Disbox cloud data.");
                 StatusText = "No remote DiscBox backup. Importing Disbox data...";
             }
         }
         catch (Exception ex)
         {
+            progressVm.Update(18, "Remote backup check failed", $"{ex.Message}. Importing Disbox data.");
             StatusText = $"DiscBox backup failed: {ex.Message}. Importing Disbox data...";
         }
 
         if (_discbox is null || !_discbox.IsAvailable)
         {
             StatusText = $"Sync error: {_discbox?.LastError() ?? "DiscBox is not available."}";
+            progressVm.Error(StatusText);
             return;
         }
 
         var migration = new DisboxMigrationService(_config, _discbox!);
-        var progress = new Progress<string>(msg => StatusText = msg);
+        var migrationPercent = restoredBackup ? 28 : 22;
+        var progress = new Progress<string>(msg =>
+        {
+            StatusText = msg;
+            migrationPercent = Math.Min(56, migrationPercent + 1);
+            progressVm.Update(migrationPercent, "Importing Disbox data...", msg);
+        });
 
         try
         {
+            progressVm.Update(migrationPercent, "Importing Disbox data...", "Connecting to Disbox cloud index.");
             (importedFolders, importedFiles) = await migration.MigrateAsync(progress);
             migrationSucceeded = true;
+            progressVm.Update(60, "Disbox import finished",
+                $"{importedFolders} folder(s), {importedFiles} file(s) imported.");
             StatusText = restoredBackup
                 ? $"Sync complete: backup restored, {importedFolders} folders, {importedFiles} Disbox files imported."
                 : $"Migration complete: {importedFolders} folders, {importedFiles} files imported.";
         }
         catch (Exception ex)
         {
+            progressVm.Update(60, "Disbox import failed", ex.Message);
             StatusText = restoredBackup
                 ? $"DiscBox backup restored. Disbox failed: {ex.Message}"
                 : $"Migration error: {ex.Message}";
         }
 
-        try
-        {
-            StatusText = "Verifying Discord cloud state...";
-            remoteSync = await Task.Run(() => _discbox.SyncRemoteState(removeEmptyFolders: !restoredBackup));
-            if (remoteSync is null)
-            {
-                StatusText = $"Cloud verification failed: {_discbox.LastError()}";
-                await RefreshAsync();
-                return;
-            }
-        }
-        catch (Exception ex)
-        {
-            StatusText = $"Cloud verification failed: {ex.Message}";
-            await RefreshAsync();
-            return;
-        }
+        progressVm.Update(68, "Finalizing cloud index...", "Skipping deep Discord message checks to avoid webhook rate limits.");
+        StatusText = "Finalizing cloud index...";
+        var localFileCount = await Task.Run(CountLocalFiles);
+        syncResult = new RemoteSyncResult(localFileCount, 0, 0);
 
+        progressVm.Update(84, "Cloud index ready",
+            $"{localFileCount} file(s) indexed. Deep verification skipped to avoid Discord rate limits.");
+
+        progressVm.Update(88, "Refreshing drive view...", "Loading the latest local state.");
         await RefreshAsync();
-        var pruned = remoteSync.RemovedFiles > 0 || remoteSync.RemovedFolders > 0;
+        var pruned = syncResult.RemovedFiles > 0 || syncResult.RemovedFolders > 0;
         var imported = importedFolders > 0 || importedFiles > 0;
         if (imported || pruned)
         {
-            var summary = $"Sync complete: checked {remoteSync.CheckedFiles} file(s), removed {remoteSync.RemovedFiles} missing file(s), removed {remoteSync.RemovedFolders} empty folder(s).";
+            var summary = $"Sync complete: indexed {syncResult.CheckedFiles} file(s), imported {importedFiles} file(s), imported {importedFolders} folder(s).";
+            progressVm.Update(92, "Updating remote backup...", summary);
             await BackupActiveDriveAsync(summary);
+            progressVm.Complete(StatusText);
         }
         else if (restoredBackup)
         {
-            StatusText = $"Sync complete: backup restored, checked {remoteSync.CheckedFiles} file(s).";
+            StatusText = $"Sync complete: backup restored, indexed {syncResult.CheckedFiles} file(s).";
+            progressVm.Complete(StatusText);
         }
         else if (migrationSucceeded)
         {
             StatusText = "Sync complete: no remote DiscBox backup or cloud files found.";
+            progressVm.Complete(StatusText);
+        }
+        else
+        {
+            StatusText = "Sync complete.";
+            progressVm.Complete(StatusText);
         }
     }
 

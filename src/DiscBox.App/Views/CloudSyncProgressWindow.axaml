@@ -1,0 +1,85 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DiscBox.ViewModels"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        x:Class="DiscBox.Views.CloudSyncProgressWindow"
+        x:DataType="vm:CloudSyncProgressViewModel"
+        Title="DiscBox - Sync Cloud"
+        Width="500" Height="260"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B0F19"
+        SystemDecorations="None">
+
+  <Grid RowDefinitions="30,*">
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="Sync Cloud"
+                 Foreground="#8E9297" FontSize="12"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+
+    <Border Grid.Row="1" Background="#161B29" Padding="32">
+      <StackPanel Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <Panel Width="30" Height="30">
+            <material:MaterialIcon Kind="CloudSync"
+                                   Foreground="#00E5FF"
+                                   Width="30" Height="30"
+                                   IsVisible="{Binding !HasError}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+            <material:MaterialIcon Kind="AlertCircle"
+                                   Foreground="#FF4B4B"
+                                   Width="30" Height="30"
+                                   IsVisible="{Binding HasError}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+          </Panel>
+          <StackPanel VerticalAlignment="Center" Spacing="2">
+            <TextBlock Text="{Binding StatusText}"
+                       Foreground="#E3E5E8"
+                       FontSize="15"
+                       FontWeight="Bold"
+                       TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="Please wait until the cloud sync finishes."
+                       Foreground="#8E9297"
+                       FontSize="12"/>
+          </StackPanel>
+        </StackPanel>
+
+        <ProgressBar Value="{Binding Percent}"
+                     Minimum="0" Maximum="100"
+                     Height="10"
+                     CornerRadius="5"
+                     Foreground="#00E5FF"
+                     Background="#2A324A"
+                     Margin="0,8,0,0"/>
+
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Grid.Column="0"
+                     Text="{Binding DetailText}"
+                     Foreground="#8E9297"
+                     FontSize="13"
+                     TextTrimming="CharacterEllipsis"/>
+          <TextBlock Grid.Column="1"
+                     Text="{Binding Percent, StringFormat='{}{0}%'}"
+                     Foreground="#00E5FF"
+                     FontSize="13"
+                     FontWeight="Bold"/>
+        </Grid>
+
+        <Border Background="#111622"
+                BorderBrush="#2A324A"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,8,0,0">
+          <TextBlock Text="DiscBox is locked during this operation."
+                     Foreground="#687086"
+                     FontSize="12"
+                     HorizontalAlignment="Center"/>
+        </Border>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

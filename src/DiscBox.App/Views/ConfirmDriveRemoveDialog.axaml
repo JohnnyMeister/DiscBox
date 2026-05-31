@@ -1,0 +1,54 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        x:Class="DiscBox.Views.ConfirmDriveRemoveDialog"
+        Title="Remove drive"
+        Width="440" Height="220"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B0F19"
+        ExtendClientAreaToDecorationsHint="True">
+
+  <Grid RowDefinitions="30,*">
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="Remove drive"
+                 Foreground="#8E9297" FontSize="12"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+
+    <Border Grid.Row="1" Background="#161B29" Padding="28">
+      <StackPanel Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <material:MaterialIcon Kind="Alert" Foreground="#FF4B4B" Width="32" Height="32"/>
+          <StackPanel VerticalAlignment="Center" Spacing="4">
+            <TextBlock x:Name="MessageText"
+                       Foreground="#E3E5E8"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"/>
+            <TextBlock Text="This only removes the drive from this app."
+                       Foreground="#8E9297"
+                       FontSize="12"/>
+          </StackPanel>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,16,0,0">
+          <Button Content="Cancel"
+                  Click="OnCancel"
+                  Background="#2A324A"
+                  Foreground="#E3E5E8"
+                  CornerRadius="8"
+                  Padding="20,10"
+                  FontWeight="SemiBold"/>
+          <Button Content="Remove"
+                  Click="OnConfirm"
+                  Background="#FF4B4B"
+                  Foreground="White"
+                  CornerRadius="8"
+                  Padding="20,10"
+                  FontWeight="Bold"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

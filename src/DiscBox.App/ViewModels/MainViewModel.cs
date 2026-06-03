@@ -28,6 +28,20 @@ public partial class MainViewModel : ObservableObject
     private bool _isCloudSyncing;
     private int _searchRevision;
 
+    private sealed record UploadTopLevelItem(
+        string LocalPath,
+        string Name,
+        string TargetPath,
+        bool IsFolder,
+        bool HasConflict);
+
+    private sealed record UploadWorkItem(
+        string LocalPath,
+        string VirtualPath,
+        string DisplayName,
+        long SizeBytes,
+        bool ReplaceExisting);
+
     private static IStorageProvider? StorageProvider =>
         (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
         ?.MainWindow?.StorageProvider;
@@ -346,6 +360,9 @@ public partial class MainViewModel : ObservableObject
             ?.MainWindow;
 
         var progressVm = new UploadProgressViewModel { FileName = $"Download {entry.Name}" };
+        progressVm.StartBatch(1, entry.SizeBytes);
+        progressVm.HeaderText = "Downloading file...";
+        progressVm.BeginFile(entry.Name, 1, 1, 0, entry.SizeBytes);
         var progressWindow = new Views.UploadProgressWindow { DataContext = progressVm };
         progressWindow.Show(mainWindow!);
 
@@ -355,11 +372,15 @@ public partial class MainViewModel : ObservableObject
         try
         {
             ok = await Task.Run(() =>
-                _discbox?.Download(entry.VirtualPath, localPath,
+                _discbox?.DownloadCancellable(entry.VirtualPath, localPath,
                     (done, total, ci, cc) =>
                     {
-                        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                            progressVm.Update(done, total, ci, cc));
+                        progressVm.WaitIfPaused();
+                        Avalonia.Threading.Dispatcher.UIThread
+                            .InvokeAsync(() => progressVm.Update(done, total, ci, cc))
+                            .GetAwaiter()
+                            .GetResult();
+                        return progressVm.Cancelled;
                     }) ?? false);
             error = _discbox?.LastError();
         }
@@ -412,6 +433,7 @@ public partial class MainViewModel : ObservableObject
 
         var progressVm = new UploadProgressViewModel
         {
+            HeaderText = "Downloading folder...",
             FileName = $"Downloading {folderEntry.Name} ({allFiles.Count} files)"
         };
         var progressWindow = new Views.UploadProgressWindow { DataContext = progressVm };
@@ -426,6 +448,10 @@ public partial class MainViewModel : ObservableObject
 
         foreach (var file in allFiles)
         {
+            progressVm.WaitIfPaused();
+            if (progressVm.Cancelled)
+                break;
+
             // Build local path preserving folder structure
             // e.g. virtualPath="/Photos/Vacation/img.jpg", basePath="/Photos"
             // relative = "/Vacation/img.jpg", local = destRoot\Photos\Vacation\img.jpg
@@ -445,11 +471,15 @@ public partial class MainViewModel : ObservableObject
             try
             {
                 ok = await Task.Run(() =>
-                    _discbox.Download(file.VirtualPath, localFilePath,
+                    _discbox.DownloadCancellable(file.VirtualPath, localFilePath,
                         (done, total, ci, cc) =>
                         {
-                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                                progressVm.Update(done, total, ci, cc));
+                            progressVm.WaitIfPaused();
+                            Avalonia.Threading.Dispatcher.UIThread
+                                .InvokeAsync(() => progressVm.Update(done, total, ci, cc))
+                                .GetAwaiter()
+                                .GetResult();
+                            return progressVm.Cancelled;
                         }));
                 if (!ok) lastError = _discbox.LastError();
             }
@@ -459,6 +489,9 @@ public partial class MainViewModel : ObservableObject
                 downloaded++;
             else
                 failed++;
+
+            if (progressVm.Cancelled)
+                break;
         }
 
         if (failed == 0)
@@ -726,19 +759,38 @@ public partial class MainViewModel : ObservableObject
             .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
             .Cast<string>()
             .ToArray();
-        await UploadLocalFilesAsync(paths);
+        await UploadLocalPathsAsync(paths);
+    }
+
+    [RelayCommand]
+    private async Task UploadFolderAsync()
+    {
+        if (StorageProvider is null) return;
+        var folders = await StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions
+        {
+            Title = "Select folders to upload",
+            AllowMultiple = true
+        });
+        if (folders is null || folders.Count == 0) return;
+
+        var paths = folders
+            .Select(folder => folder.TryGetLocalPath())
+            .Where(path => !string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
+            .Cast<string>()
+            .ToArray();
+        await UploadLocalPathsAsync(paths);
     }
 
     public async Task UploadDroppedFilesAsync(IEnumerable<string> localPaths)
     {
-        await UploadLocalFilesAsync(localPaths);
+        await UploadLocalPathsAsync(localPaths);
     }
 
-    private async Task UploadLocalFilesAsync(IEnumerable<string> localPaths)
+    private async Task UploadLocalPathsAsync(IEnumerable<string> localPaths)
     {
         if (_discbox is null) return;
         var paths = localPaths
-            .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+            .Where(path => !string.IsNullOrWhiteSpace(path) && (File.Exists(path) || Directory.Exists(path)))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         if (paths.Length == 0) return;
@@ -747,53 +799,340 @@ public partial class MainViewModel : ObservableObject
             as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
             ?.MainWindow;
 
-        var uploadedAny = false;
-        foreach (var localPath in paths)
+        var topLevelItems = BuildTopLevelUploadItems(paths);
+        if (topLevelItems.Count == 0) return;
+
+        var conflicts = topLevelItems
+            .Where(item => item.HasConflict)
+            .Select(item => item.Name)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var conflictChoice = Views.UploadConflictChoice.Replace;
+        if (conflicts.Length > 0)
         {
-            var fileName = Path.GetFileName(localPath);
-            if (string.IsNullOrWhiteSpace(fileName)) continue;
+            var dialog = new Views.UploadConflictDialog(conflicts);
+            conflictChoice = await dialog.ShowDialog<Views.UploadConflictChoice?>(mainWindow!) ??
+                             Views.UploadConflictChoice.Cancel;
 
-            var virtualPath = CombineVirtualPath(CurrentPath, fileName);
-
-            var progressVm = new UploadProgressViewModel { FileName = fileName };
-            var progressWindow = new Views.UploadProgressWindow { DataContext = progressVm };
-            progressWindow.Show(mainWindow!);
-
-            bool ok = false;
-            string? error = null;
-
-            try
+            if (conflictChoice == Views.UploadConflictChoice.Cancel)
             {
-                ok = await Task.Run(() =>
-                    _discbox?.Upload(localPath, virtualPath,
-                        (done, total, ci, cc) =>
-                        {
-                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                                progressVm.Update(done, total, ci, cc));
-                        }) ?? false);
-                error = _discbox?.LastError();
+                StatusText = "Upload cancelled.";
+                return;
             }
-            catch (Exception ex) { error = ex.Message; }
+        }
 
-            if (ok)
+        var selectedItems = topLevelItems
+            .Where(item => !item.HasConflict || conflictChoice == Views.UploadConflictChoice.Replace)
+            .ToArray();
+
+        if (selectedItems.Length == 0)
+        {
+            StatusText = "Upload skipped: all selected items already exist.";
+            return;
+        }
+
+        var changedAny = selectedItems.Any(item => item.IsFolder);
+        var preparationError = await PrepareUploadFoldersAsync(selectedItems, conflictChoice);
+        if (!string.IsNullOrWhiteSpace(preparationError))
+            StatusText = preparationError;
+
+        var workItems = BuildUploadWorkItems(selectedItems, conflictChoice).ToArray();
+        if (workItems.Length == 0)
+        {
+            await RefreshAsync();
+            if (selectedItems.Any(item => item.IsFolder))
             {
-                uploadedAny = true;
-                progressVm.Complete(fileName);
-                StatusText = $"Uploaded {fileName}.";
-            }
-            else
-            {
-                progressVm.Error(error ?? "unknown");
-                StatusText = $"Error: {error}";
+                changedAny = true;
+                await BackupActiveDriveAsync("Folder upload complete.");
             }
 
-            await Task.Delay(2000);
+            StatusText = "Folder upload complete.";
+            return;
+        }
+
+        var uploadedAny = false;
+        var uploaded = 0;
+        var failed = 0;
+        var cancelled = false;
+        string? lastError = null;
+        var processedBytes = 0L;
+        var totalBytes = workItems.Sum(item => item.SizeBytes);
+
+        var progressVm = new UploadProgressViewModel();
+        progressVm.StartBatch(workItems.Length, totalBytes);
+        var progressWindow = new Views.UploadProgressWindow { DataContext = progressVm };
+        progressWindow.Show(mainWindow!);
+
+        try
+        {
+            for (var index = 0; index < workItems.Length; index++)
+            {
+                progressVm.WaitIfPaused();
+                if (progressVm.Cancelled)
+                {
+                    cancelled = true;
+                    break;
+                }
+
+                var item = workItems[index];
+                var fileSize = item.SizeBytes;
+                var currentFileDone = 0L;
+                progressVm.BeginFile(item.DisplayName, index + 1, workItems.Length, processedBytes, fileSize);
+
+                bool ok = false;
+                string? error = null;
+
+                try
+                {
+                    ok = await UploadWorkItemAsync(item, progressVm, value => currentFileDone = value);
+                    error = progressVm.Cancelled ? "cancelled" : _discbox?.LastError();
+                }
+                catch (Exception ex) { error = ex.Message; }
+
+                if (ok)
+                {
+                    uploadedAny = true;
+                    uploaded++;
+                    changedAny = true;
+                    processedBytes += fileSize;
+                    progressVm.FinishCurrentFile(uploaded: true, processedBytes);
+                    StatusText = workItems.Length == 1
+                        ? $"Uploaded {item.DisplayName}."
+                        : $"Uploaded {uploaded}/{workItems.Length} file(s).";
+                }
+                else
+                {
+                    lastError = error ?? "unknown";
+                    if (progressVm.Cancelled)
+                    {
+                        cancelled = true;
+                        processedBytes += Math.Min(fileSize, currentFileDone);
+                        progressVm.FinishCurrentFile(uploaded: false, processedBytes);
+                        StatusText = $"Upload cancelled. {uploaded} file(s) uploaded.";
+                        break;
+                    }
+
+                    failed++;
+                    processedBytes += fileSize;
+                    progressVm.FinishCurrentFile(uploaded: false, processedBytes);
+                    StatusText = $"Upload error: {lastError}";
+                }
+            }
+
+            progressVm.CompleteBatch(uploaded, failed, cancelled);
+            if (!cancelled)
+            {
+                StatusText = failed == 0
+                    ? $"Uploaded {uploaded} file(s)."
+                    : $"{uploaded} uploaded, {failed} failed: {lastError}";
+            }
+
+            await Task.Delay(cancelled ? 1200 : failed > 0 ? 2500 : 1600);
+        }
+        finally
+        {
             progressWindow.Close();
         }
 
         await RefreshAsync();
-        if (uploadedAny)
+        if (changedAny || uploadedAny)
             await BackupActiveDriveAsync("Upload complete.");
+    }
+
+    private List<UploadTopLevelItem> BuildTopLevelUploadItems(IEnumerable<string> localPaths)
+    {
+        var existingNames = _discbox?.List(CurrentPath)
+            .Select(entry => entry.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
+        var plannedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var items = new List<UploadTopLevelItem>();
+
+        foreach (var localPath in localPaths)
+        {
+            var isFolder = Directory.Exists(localPath);
+            var name = GetLocalItemName(localPath, isFolder);
+            if (string.IsNullOrWhiteSpace(name))
+                continue;
+
+            var hasConflict = existingNames.Contains(name) || !plannedNames.Add(name);
+            items.Add(new UploadTopLevelItem(
+                localPath,
+                name,
+                CombineVirtualPath(CurrentPath, name),
+                isFolder,
+                hasConflict));
+        }
+
+        return items;
+    }
+
+    private async Task<string?> PrepareUploadFoldersAsync(
+        IReadOnlyList<UploadTopLevelItem> items,
+        Views.UploadConflictChoice conflictChoice)
+    {
+        if (_discbox is null)
+            return "DiscBox is not available.";
+
+        var errors = new List<string>();
+        await Task.Run(() =>
+        {
+            foreach (var item in items.Where(item => item.IsFolder))
+            {
+                if (item.HasConflict && conflictChoice == Views.UploadConflictChoice.Replace)
+                {
+                    if (!_discbox.Delete(item.TargetPath))
+                    {
+                        errors.Add($"could not replace {item.Name}: {_discbox.LastError()}");
+                        continue;
+                    }
+                }
+
+                CreateFolderTreeForUpload(item, errors);
+            }
+        });
+
+        return errors.Count == 0
+            ? null
+            : $"Some folders could not be prepared: {string.Join("; ", errors.Take(2))}";
+    }
+
+    private void CreateFolderTreeForUpload(UploadTopLevelItem item, List<string> errors)
+    {
+        if (_discbox is null)
+            return;
+
+        if (!_discbox.Mkdir(item.TargetPath) && !IsPathAlreadyExistsError(_discbox.LastError()))
+            errors.Add($"could not create {item.Name}: {_discbox.LastError()}");
+
+        foreach (var folderPath in EnumerateDirectoriesSafe(item.LocalPath)
+                     .OrderBy(path => path.Count(ch => ch == Path.DirectorySeparatorChar || ch == Path.AltDirectorySeparatorChar)))
+        {
+            var relative = Path.GetRelativePath(item.LocalPath, folderPath);
+            var virtualPath = CombineVirtualPath(item.TargetPath, ToVirtualRelativePath(relative));
+            if (!_discbox.Mkdir(virtualPath) && !IsPathAlreadyExistsError(_discbox.LastError()))
+                errors.Add($"could not create {virtualPath}: {_discbox.LastError()}");
+        }
+    }
+
+    private IEnumerable<UploadWorkItem> BuildUploadWorkItems(
+        IReadOnlyList<UploadTopLevelItem> items,
+        Views.UploadConflictChoice conflictChoice)
+    {
+        foreach (var item in items)
+        {
+            if (!item.IsFolder)
+            {
+                yield return new UploadWorkItem(
+                    item.LocalPath,
+                    item.TargetPath,
+                    item.Name,
+                    GetFileLengthSafe(item.LocalPath),
+                    item.HasConflict && conflictChoice == Views.UploadConflictChoice.Replace);
+                continue;
+            }
+
+            foreach (var filePath in EnumerateFilesSafe(item.LocalPath))
+            {
+                var relative = Path.GetRelativePath(item.LocalPath, filePath);
+                var virtualPath = CombineVirtualPath(item.TargetPath, ToVirtualRelativePath(relative));
+                yield return new UploadWorkItem(
+                    filePath,
+                    virtualPath,
+                    CombineVirtualPath(item.Name, ToVirtualRelativePath(relative)).TrimStart('/'),
+                    GetFileLengthSafe(filePath),
+                    false);
+            }
+        }
+    }
+
+    private async Task<bool> UploadWorkItemAsync(
+        UploadWorkItem item,
+        UploadProgressViewModel progressVm,
+        Action<long> setCurrentFileDone)
+    {
+        if (_discbox is null)
+            return false;
+
+        var uploadPath = item.ReplaceExisting
+            ? MakeTemporaryUploadPath(item.VirtualPath)
+            : item.VirtualPath;
+
+        var uploaded = await Task.Run(() =>
+            _discbox.UploadCancellable(item.LocalPath, uploadPath,
+                (done, total, ci, cc) =>
+                {
+                    progressVm.WaitIfPaused();
+                    setCurrentFileDone(Math.Max(0, done));
+                    Avalonia.Threading.Dispatcher.UIThread
+                        .InvokeAsync(() => progressVm.UpdateBatch(done, total, ci, cc))
+                        .GetAwaiter()
+                        .GetResult();
+                    return progressVm.Cancelled;
+                }));
+
+        if (!uploaded || !item.ReplaceExisting)
+            return uploaded;
+
+        var deleted = await Task.Run(() => _discbox.Delete(item.VirtualPath));
+        if (!deleted)
+        {
+            await Task.Run(() => _discbox.Delete(uploadPath));
+            return false;
+        }
+
+        var renamed = await Task.Run(() => _discbox.Rename(uploadPath, item.VirtualPath));
+        if (!renamed)
+        {
+            await Task.Run(() => _discbox.Delete(uploadPath));
+            return false;
+        }
+
+        return true;
+    }
+
+    private static IEnumerable<string> EnumerateDirectoriesSafe(string root)
+    {
+        try { return Directory.EnumerateDirectories(root, "*", SearchOption.AllDirectories).ToArray(); }
+        catch { return []; }
+    }
+
+    private static IEnumerable<string> EnumerateFilesSafe(string root)
+    {
+        try { return Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories).ToArray(); }
+        catch { return []; }
+    }
+
+    private static string GetLocalItemName(string localPath, bool isFolder)
+    {
+        var path = isFolder
+            ? localPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            : localPath;
+        return Path.GetFileName(path);
+    }
+
+    private static string ToVirtualRelativePath(string relativePath)
+    {
+        return relativePath
+            .Replace('\\', '/')
+            .Trim('/');
+    }
+
+    private static string MakeTemporaryUploadPath(string targetPath)
+    {
+        var normalized = NormalizeVirtualPath(targetPath);
+        var slash = normalized.LastIndexOf('/');
+        var folder = slash <= 0 ? "/" : normalized[..slash];
+        var name = slash >= 0 && slash < normalized.Length - 1
+            ? normalized[(slash + 1)..]
+            : normalized.TrimStart('/');
+        return CombineVirtualPath(folder, $".discbox-upload-{Guid.NewGuid():N}-{name}");
+    }
+
+    private static long GetFileLengthSafe(string path)
+    {
+        try { return new FileInfo(path).Length; }
+        catch { return 0; }
     }
 
     [RelayCommand]
@@ -1502,6 +1841,7 @@ public partial class MainViewModel : ObservableObject
 
         foreach (var item in items)
         {
+            progressVm.WaitIfPaused();
             if (progressVm.Cancelled)
                 break;
 
@@ -1574,10 +1914,15 @@ public partial class MainViewModel : ObservableObject
             return false;
 
         progressVm.StartItem(entry.Name);
+        progressVm.WaitIfPaused();
 
         var movePath = destPath;
         for (var attempt = 0; attempt < 100; attempt++)
         {
+            progressVm.WaitIfPaused();
+            if (progressVm.Cancelled)
+                return false;
+
             var moved = await Task.Run(() => _discbox.Rename(entry.VirtualPath, movePath));
             if (moved)
             {
@@ -1604,6 +1949,7 @@ public partial class MainViewModel : ObservableObject
             return false;
 
         progressVm.StartItem(entry.Name);
+        progressVm.WaitIfPaused();
 
         if (entry.IsFolder)
         {
@@ -1616,6 +1962,7 @@ public partial class MainViewModel : ObservableObject
 
             foreach (var child in children)
             {
+                progressVm.WaitIfPaused();
                 if (progressVm.Cancelled)
                     return true;
 
@@ -1635,11 +1982,15 @@ public partial class MainViewModel : ObservableObject
         try
         {
             var downloaded = await Task.Run(() =>
-                _discbox.Download(entry.VirtualPath, tempPath,
+                _discbox.DownloadCancellable(entry.VirtualPath, tempPath,
                     (done, total, ci, cc) =>
                     {
-                        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                            progressVm.UpdateBytes(done, total, "Downloading"));
+                        progressVm.WaitIfPaused();
+                        Avalonia.Threading.Dispatcher.UIThread
+                            .InvokeAsync(() => progressVm.UpdateBytes(done, total, "Downloading"))
+                            .GetAwaiter()
+                            .GetResult();
+                        return progressVm.Cancelled;
                     }));
             if (!downloaded)
                 return false;
@@ -1648,11 +1999,15 @@ public partial class MainViewModel : ObservableObject
             for (var attempt = 0; attempt < 100; attempt++)
             {
                 var uploaded = await Task.Run(() =>
-                    _discbox.Upload(tempPath, uploadPath,
+                    _discbox.UploadCancellable(tempPath, uploadPath,
                         (done, total, ci, cc) =>
                         {
-                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                                progressVm.UpdateBytes(done, total, "Uploading"));
+                            progressVm.WaitIfPaused();
+                            Avalonia.Threading.Dispatcher.UIThread
+                                .InvokeAsync(() => progressVm.UpdateBytes(done, total, "Uploading"))
+                                .GetAwaiter()
+                                .GetResult();
+                            return progressVm.Cancelled;
                         }));
                 if (uploaded)
                 {

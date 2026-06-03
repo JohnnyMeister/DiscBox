@@ -8,4 +8,10 @@ public sealed record UpdateInfo(
     string? InstallerUrl,
     string? InstallerFileName,
     long? InstallerSizeBytes,
-    string? InstallerSha256);
+    string? InstallerSha256,
+    string? PortableUrl,
+    string? PortableFileName,
+    long? PortableSizeBytes,
+    string? PortableSha256);
+
+public sealed record UpdateInstallProgress(double Percent, string Status);

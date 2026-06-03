@@ -1,0 +1,76 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        x:Class="DiscBox.Views.UploadConflictDialog"
+        Title="Upload conflicts"
+        Width="500" Height="250"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B0F19"
+        ExtendClientAreaToDecorationsHint="True">
+
+  <Grid RowDefinitions="30,*">
+    <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
+      <TextBlock Text="Upload conflicts"
+                 Foreground="#8E9297" FontSize="12"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+
+    <Border Grid.Row="1" Background="#161B29" Padding="28">
+      <StackPanel Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <material:MaterialIcon Kind="FileReplaceOutline"
+                                 Foreground="#00E5FF"
+                                 Width="34" Height="34"/>
+          <StackPanel Spacing="5" VerticalAlignment="Center">
+            <TextBlock x:Name="TitleText"
+                       Text="Some items already exist"
+                       Foreground="#E3E5E8"
+                       FontSize="16"
+                       FontWeight="Bold"/>
+            <TextBlock x:Name="MessageText"
+                       Foreground="#AEB6C2"
+                       FontSize="12"
+                       TextWrapping="Wrap"/>
+          </StackPanel>
+        </StackPanel>
+
+        <Border Background="#0B0F19"
+                BorderBrush="#2A324A"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12">
+          <TextBlock x:Name="PreviewText"
+                     Foreground="#8E9297"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     MaxHeight="44"/>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,6,0,0">
+          <Button Content="Cancel"
+                  Click="OnCancel"
+                  Background="#2A324A"
+                  Foreground="#E3E5E8"
+                  CornerRadius="8"
+                  Padding="16,10"
+                  FontWeight="SemiBold"/>
+          <Button Content="Skip duplicates"
+                  Click="OnSkip"
+                  Background="#2A324A"
+                  Foreground="#E3E5E8"
+                  CornerRadius="8"
+                  Padding="16,10"
+                  FontWeight="SemiBold"/>
+          <Button Content="Replace all"
+                  Click="OnReplace"
+                  Background="#00E5FF"
+                  Foreground="#0B0F19"
+                  CornerRadius="8"
+                  Padding="16,10"
+                  FontWeight="Bold"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

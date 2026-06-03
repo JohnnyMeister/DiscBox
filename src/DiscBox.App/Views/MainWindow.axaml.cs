@@ -1,9 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using DiscBox.Models;
 using DiscBox.Services;
@@ -22,7 +24,12 @@ public partial class MainWindow : Window
     private bool _dragSelectionActive;
     private bool _isClearingSelection;
     private bool _updateCheckStarted;
+    private bool _isMiddleScrolling;
     private Point _dragStart;
+    private Point _middleScrollOrigin;
+    private Point _middleScrollPosition;
+    private IPointer? _middleScrollPointer;
+    private DispatcherTimer? _middleScrollTimer;
     private MainViewModel? _viewModel;
 
     public MainWindow()
@@ -80,6 +87,7 @@ public partial class MainWindow : Window
         host.AddHandler(PointerPressedEvent, OnFileListPointerPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         host.AddHandler(PointerMovedEvent, OnFileListPointerMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         host.AddHandler(PointerReleasedEvent, OnFileListPointerReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
+        host.AddHandler(PointerWheelChangedEvent, OnFileListPointerWheelChanged, RoutingStrategies.Tunnel, handledEventsToo: true);
         DragDrop.SetAllowDrop(host, true);
         host.AddHandler(DragDrop.DragEnterEvent, OnFileListDragEnter, RoutingStrategies.Bubble);
         host.AddHandler(DragDrop.DragOverEvent, OnFileListDragOver, RoutingStrategies.Bubble);
@@ -123,7 +131,7 @@ public partial class MainWindow : Window
 
         var paths = files
             .Select(file => file.TryGetLocalPath())
-            .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+            .Where(path => !string.IsNullOrWhiteSpace(path) && (File.Exists(path) || Directory.Exists(path)))
             .Cast<string>()
             .ToArray();
 
@@ -184,10 +192,24 @@ public partial class MainWindow : Window
         if (sender is not Control host)
             return;
 
-        if (FindVisual<Button>(e.Source) is not null)
+        if (_isMiddleScrolling)
+        {
+            StopMiddleScroll();
+            e.Handled = true;
+            return;
+        }
+
+        if (FindVisual<Button>(e.Source) is not null || IsScrollBarInteraction(e.Source))
             return;
 
         var point = e.GetCurrentPoint(host);
+        if (point.Properties.IsMiddleButtonPressed)
+        {
+            StartMiddleScroll(host, point.Position, e.Pointer);
+            e.Handled = true;
+            return;
+        }
+
         if (!point.Properties.IsLeftButtonPressed)
             return;
 
@@ -202,6 +224,13 @@ public partial class MainWindow : Window
 
     private void OnFileListPointerMoved(object? sender, PointerEventArgs e)
     {
+        if (_isMiddleScrolling && sender is Control middleHost)
+        {
+            _middleScrollPosition = e.GetPosition(middleHost);
+            e.Handled = true;
+            return;
+        }
+
         if (!_isDragSelecting || sender is not Control host)
             return;
 
@@ -234,6 +263,68 @@ public partial class MainWindow : Window
             e.Handled = true;
 
         _dragSelectionActive = false;
+    }
+
+    private void OnFileListPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (_isMiddleScrolling)
+            StopMiddleScroll();
+    }
+
+    private void StartMiddleScroll(Control host, Point position, IPointer pointer)
+    {
+        _isMiddleScrolling = true;
+        _middleScrollOrigin = position;
+        _middleScrollPosition = position;
+        _middleScrollPointer = pointer;
+        pointer.Capture(host);
+
+        var indicator = this.FindControl<Border>("MiddleScrollIndicator");
+        if (indicator is not null)
+        {
+            Canvas.SetLeft(indicator, position.X - 17);
+            Canvas.SetTop(indicator, position.Y - 17);
+            indicator.IsVisible = true;
+        }
+
+        _middleScrollTimer ??= new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(16)
+        };
+        _middleScrollTimer.Tick -= OnMiddleScrollTick;
+        _middleScrollTimer.Tick += OnMiddleScrollTick;
+        _middleScrollTimer.Start();
+    }
+
+    private void StopMiddleScroll()
+    {
+        _isMiddleScrolling = false;
+        _middleScrollTimer?.Stop();
+        _middleScrollPointer?.Capture(null);
+        _middleScrollPointer = null;
+
+        var indicator = this.FindControl<Border>("MiddleScrollIndicator");
+        if (indicator is not null)
+            indicator.IsVisible = false;
+    }
+
+    private void OnMiddleScrollTick(object? sender, EventArgs e)
+    {
+        if (!_isMiddleScrolling)
+            return;
+
+        var list = this.FindControl<ListBox>("FileList");
+        var scrollViewer = list?.GetVisualDescendants().OfType<ScrollViewer>().FirstOrDefault();
+        if (scrollViewer is null)
+            return;
+
+        var delta = _middleScrollPosition.Y - _middleScrollOrigin.Y;
+        if (Math.Abs(delta) < 12)
+            return;
+
+        var maxOffset = Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
+        var nextY = Math.Clamp(scrollViewer.Offset.Y + (delta * 0.08), 0, maxOffset);
+        scrollViewer.Offset = new Vector(scrollViewer.Offset.X, nextY);
     }
 
     private void UpdateSelectionRectangle(Rect selectionRect)
@@ -328,6 +419,20 @@ public partial class MainWindow : Window
         }
 
         return null;
+    }
+
+    private static bool IsScrollBarInteraction(object? source)
+    {
+        var visual = source as Visual;
+        while (visual is not null)
+        {
+            if (visual is ScrollBar || visual is Thumb || visual is RepeatButton || visual is Track)
+                return true;
+
+            visual = visual.GetVisualParent();
+        }
+
+        return false;
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

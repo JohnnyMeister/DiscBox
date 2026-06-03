@@ -5,7 +5,7 @@
         x:Class="DiscBox.Views.UploadProgressWindow"
         x:DataType="vm:UploadProgressViewModel"
         Title="DiscBox - Upload"
-        Width="500" Height="290"
+        Width="520" Height="320"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
         Background="#0B0F19"
@@ -14,7 +14,7 @@
   <Grid RowDefinitions="30,*">
     <!-- TitleBar background -->
     <Border Grid.Row="0" Background="#0B0F19" IsHitTestVisible="False">
-      <TextBlock Text="Uploading file..." 
+      <TextBlock Text="{Binding HeaderText}"
                  Foreground="#8E9297" FontSize="12" 
                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Border>
@@ -24,9 +24,14 @@
 
         <StackPanel Orientation="Horizontal" Spacing="12">
           <material:MaterialIcon Kind="CloudUpload" Foreground="#00E5FF" Width="28" Height="28"/>
-          <TextBlock Text="{Binding FileName}"
-                     Foreground="#E3E5E8" FontSize="15" FontWeight="Bold"
-                     TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+          <StackPanel Spacing="2" VerticalAlignment="Center">
+            <TextBlock Text="{Binding FileName}"
+                       Foreground="#E3E5E8" FontSize="15" FontWeight="Bold"
+                       TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="{Binding FileCounterText}"
+                       Foreground="#8E9297" FontSize="12"
+                       TextTrimming="CharacterEllipsis"/>
+          </StackPanel>
         </StackPanel>
 
         <ProgressBar Value="{Binding Percent}"
@@ -60,12 +65,26 @@
           </StackPanel>
         </Grid>
 
-        <Button Content="Cancel"
-                Command="{Binding CancelCommand}"
-                IsEnabled="{Binding !IsDone}"
-                HorizontalAlignment="Right"
-                Background="#2A324A" Foreground="#E3E5E8"
-                CornerRadius="8" Padding="20,8" FontWeight="SemiBold" Margin="0,8,0,0"/>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,8,0,0">
+          <Button Content="{Binding PauseResumeText}"
+                  Command="{Binding PauseResumeCommand}"
+                  IsEnabled="{Binding !IsDone}"
+                  Background="#1A2033"
+                  Foreground="#00E5FF"
+                  BorderBrush="#2A324A"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Padding="18,8"
+                  FontWeight="SemiBold"/>
+          <Button Content="Cancel"
+                  Command="{Binding CancelCommand}"
+                  IsEnabled="{Binding !IsDone}"
+                  Background="#2A324A" Foreground="#E3E5E8"
+                  CornerRadius="8" Padding="20,8" FontWeight="SemiBold"/>
+        </StackPanel>
 
       </StackPanel>
     </Border>

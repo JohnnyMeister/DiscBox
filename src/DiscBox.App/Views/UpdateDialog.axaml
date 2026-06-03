@@ -88,7 +88,7 @@
                   FontWeight="Bold">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <material:MaterialIcon Kind="Download" Width="18" Height="18"/>
-              <TextBlock Text="Update now"/>
+              <TextBlock Text="Download &amp; install"/>
             </StackPanel>
           </Button>
         </StackPanel>

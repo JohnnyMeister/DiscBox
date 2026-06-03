@@ -114,6 +114,27 @@ public class DiscboxService : IDisposable
     public bool Upload(string localPath, string virtualPath,
                        Action<long, long, int, int>? onProgress = null)
     {
+        return UploadCore(
+            localPath,
+            virtualPath,
+            onProgress is null
+                ? null
+                : (done, total, chunkIndex, chunkCount) =>
+                {
+                    onProgress(done, total, chunkIndex, chunkCount);
+                    return false;
+                });
+    }
+
+    public bool UploadCancellable(string localPath, string virtualPath,
+                       Func<long, long, int, int, bool>? onProgress = null)
+    {
+        return UploadCore(localPath, virtualPath, onProgress);
+    }
+
+    private bool UploadCore(string localPath, string virtualPath,
+                       Func<long, long, int, int, bool>? onProgress)
+    {
         if (!IsAvailable) return false;
 
         DiscboxNative.ProgressCallback? cb = null;
@@ -121,8 +142,7 @@ public class DiscboxService : IDisposable
         {
             cb = (_, vp, done, total, ci, cc) =>
             {
-                onProgress(done, total, ci, cc);
-                return 0; // 0 = continue
+                return onProgress(done, total, ci, cc) ? 1 : 0;
             };
         }
 
@@ -133,6 +153,27 @@ public class DiscboxService : IDisposable
     public bool Download(string virtualPath, string localPath,
                          Action<long, long, int, int>? onProgress = null)
     {
+        return DownloadCore(
+            virtualPath,
+            localPath,
+            onProgress is null
+                ? null
+                : (done, total, chunkIndex, chunkCount) =>
+                {
+                    onProgress(done, total, chunkIndex, chunkCount);
+                    return false;
+                });
+    }
+
+    public bool DownloadCancellable(string virtualPath, string localPath,
+                         Func<long, long, int, int, bool>? onProgress = null)
+    {
+        return DownloadCore(virtualPath, localPath, onProgress);
+    }
+
+    private bool DownloadCore(string virtualPath, string localPath,
+                         Func<long, long, int, int, bool>? onProgress)
+    {
         if (!IsAvailable) return false;
 
         DiscboxNative.ProgressCallback? cb = null;
@@ -140,8 +181,7 @@ public class DiscboxService : IDisposable
         {
             cb = (_, vp, done, total, ci, cc) =>
             {
-                onProgress(done, total, ci, cc);
-                return 0;
+                return onProgress(done, total, ci, cc) ? 1 : 0;
             };
         }
 

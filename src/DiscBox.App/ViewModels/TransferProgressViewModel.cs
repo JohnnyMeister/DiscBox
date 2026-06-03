@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Threading;
 
 namespace DiscBox.ViewModels;
 
@@ -16,7 +17,10 @@ public partial class TransferProgressViewModel : ObservableObject
     [ObservableProperty] private bool _isDone = false;
     [ObservableProperty] private bool _isCut = false;
     [ObservableProperty] private bool _isIndeterminate = true;
+    [ObservableProperty] private bool _isPaused = false;
+    [ObservableProperty] private string _pauseResumeText = "Pause";
 
+    private readonly ManualResetEventSlim _pauseGate = new(true);
     private DateTime _startedAt = DateTime.Now;
     private DateTime _currentItemStartedAt = DateTime.Now;
     private int _doneItems;
@@ -28,8 +32,39 @@ public partial class TransferProgressViewModel : ObservableObject
     private void Cancel()
     {
         Cancelled = true;
+        IsPaused = false;
+        PauseResumeText = "Pause";
+        _pauseGate.Set();
         StatusText = "Cancelling...";
         DetailText = "The operation will stop after the current item finishes.";
+    }
+
+    [RelayCommand]
+    private void PauseResume()
+    {
+        if (IsDone || Cancelled)
+            return;
+
+        if (IsPaused)
+        {
+            IsPaused = false;
+            PauseResumeText = "Pause";
+            StatusText = "Resuming...";
+            _pauseGate.Set();
+            return;
+        }
+
+        IsPaused = true;
+        PauseResumeText = "Resume";
+        StatusText = "Paused";
+        DetailText = "The operation will continue when you resume.";
+        _pauseGate.Reset();
+    }
+
+    public void WaitIfPaused()
+    {
+        while (IsPaused && !Cancelled && !IsDone)
+            _pauseGate.Wait(100);
     }
 
     public void Start(string title, int totalItems, bool isCut)
@@ -47,6 +82,10 @@ public partial class TransferProgressViewModel : ObservableObject
         DetailText = string.Empty;
         SpeedText = string.Empty;
         EtaText = string.Empty;
+        IsPaused = false;
+        PauseResumeText = "Pause";
+        Cancelled = false;
+        _pauseGate.Set();
     }
 
     public void StartItem(string name)
@@ -112,6 +151,9 @@ public partial class TransferProgressViewModel : ObservableObject
         SpeedText = string.Empty;
         EtaText = string.Empty;
         IsDone = true;
+        IsPaused = false;
+        PauseResumeText = "Pause";
+        _pauseGate.Set();
     }
 
     public void Error(string message)
@@ -122,6 +164,9 @@ public partial class TransferProgressViewModel : ObservableObject
         SpeedText = string.Empty;
         EtaText = string.Empty;
         IsDone = true;
+        IsPaused = false;
+        PauseResumeText = "Pause";
+        _pauseGate.Set();
     }
 
     private void UpdateItemProgress(double itemFraction)

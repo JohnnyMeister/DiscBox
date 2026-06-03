@@ -69,12 +69,26 @@
           </StackPanel>
         </Grid>
 
-        <Button Content="Cancel"
-                Command="{Binding CancelCommand}"
-                IsEnabled="{Binding !IsDone}"
-                HorizontalAlignment="Right"
-                Background="#2A324A" Foreground="#E3E5E8"
-                CornerRadius="8" Padding="20,8" FontWeight="SemiBold" Margin="0,8,0,0"/>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,8,0,0">
+          <Button Content="{Binding PauseResumeText}"
+                  Command="{Binding PauseResumeCommand}"
+                  IsEnabled="{Binding !IsDone}"
+                  Background="#1A2033"
+                  Foreground="#00E5FF"
+                  BorderBrush="#2A324A"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Padding="18,8"
+                  FontWeight="SemiBold"/>
+          <Button Content="Cancel"
+                  Command="{Binding CancelCommand}"
+                  IsEnabled="{Binding !IsDone}"
+                  Background="#2A324A" Foreground="#E3E5E8"
+                  CornerRadius="8" Padding="20,8" FontWeight="SemiBold"/>
+        </StackPanel>
 
       </StackPanel>
     </Border>

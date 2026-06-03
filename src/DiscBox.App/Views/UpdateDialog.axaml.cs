@@ -13,7 +13,7 @@ public partial class UpdateDialog : Window
     private readonly CancellationTokenSource _cts = new();
 
     public UpdateDialog()
-        : this(new UpdateInfo("0.0.0", "0.0.0", "https://github.com/JohnnyMeister/DiscBox/releases", null, null, null, null, null))
+        : this(new UpdateInfo("0.0.0", "0.0.0", "https://github.com/JohnnyMeister/DiscBox/releases", null, null, null, null, null, null, null, null, null))
     {
     }
 
@@ -39,10 +39,10 @@ public partial class UpdateDialog : Window
                 ? "No release notes were provided for this version."
                 : _update.ReleaseNotes.Trim();
 
-        if (string.IsNullOrWhiteSpace(_update.InstallerUrl))
+        if (string.IsNullOrWhiteSpace(_update.PortableUrl))
         {
             this.FindControl<TextBlock>("StatusText")!.Text =
-                "This release does not include an installer yet. Open the release page to download it manually.";
+                "This release does not include a portable package for in-app updates. Open the release page to download it manually.";
             this.FindControl<Button>("UpdateButton")!.IsEnabled = false;
         }
     }
@@ -79,16 +79,13 @@ public partial class UpdateDialog : Window
 
         try
         {
-            var progress = new Progress<double>(value =>
+            var progress = new Progress<UpdateInstallProgress>(value =>
             {
-                var percent = Math.Clamp(value * 100, 0, 100);
-                progressBar.Value = percent;
-                statusText.Text = $"Downloading update... {percent:0}%";
+                progressBar.Value = Math.Clamp(value.Percent, 0, 100);
+                statusText.Text = value.Status;
             });
 
-            var installerPath = await UpdateService.DownloadInstallerAsync(_update, progress, _cts.Token);
-            statusText.Text = "Starting installer...";
-            UpdateService.LaunchInstallerAndExit(installerPath);
+            await UpdateService.DownloadInstallAndRestartAsync(_update, progress, _cts.Token);
         }
         catch (OperationCanceledException)
         {

@@ -56,13 +56,13 @@ Download one of these files:
 
 | File                                 | Recommended for            |
 | ------------------------------------ | -------------------------- |
-| `DiscBoxSetup-0.1.0.exe`             | Most users                 |
-| `DiscBox-0.1.0-win-x64-portable.zip` | Portable use, no installer |
+| `DiscBoxSetup-0.1.3.exe`             | Most users                 |
+| `DiscBox-0.1.3-win-x64-portable.zip` | Portable use, no installer |
 
 For most users, the recommended option is:
 
 ```txt
-DiscBoxSetup-0.1.0.exe
+DiscBoxSetup-0.1.3.exe
 ```
 
 ### Step 4: Install or run DiscBox
@@ -70,7 +70,7 @@ DiscBoxSetup-0.1.0.exe
 If you downloaded the installer, open:
 
 ```txt
-DiscBoxSetup-0.1.0.exe
+DiscBoxSetup-0.1.3.exe
 ```
 
 Then follow the installation steps.
@@ -78,7 +78,7 @@ Then follow the installation steps.
 If you downloaded the portable version, extract:
 
 ```txt
-DiscBox-0.1.0-win-x64-portable.zip
+DiscBox-0.1.3-win-x64-portable.zip
 ```
 
 Then run DiscBox from the extracted folder.
